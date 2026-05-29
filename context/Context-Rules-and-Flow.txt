@@ -1,0 +1,718 @@
+# NUverse Laguna — OOP Development Context & Engineering Guide
+
+# Purpose
+
+This document defines the Object-Oriented Programming principles, architectural standards, development mindset, and engineering practices that must be followed throughout the development of NUverse Laguna.
+
+The goal is to maintain:
+
+* Clean architecture
+* Scalability
+* Maintainability
+* Readability
+* Production-ready standards
+* Consistent code structure
+
+The project must avoid:
+
+* Spaghetti code
+* God classes
+* Overengineering
+* Tight coupling
+* Repeated logic
+* Large unmaintainable components
+
+This guide acts as the engineering foundation for all AI-assisted and manual development.
+
+---
+
+# 1. Core Engineering Philosophy
+
+NUverse Laguna must prioritize:
+
+* Simplicity over unnecessary complexity
+* Maintainability over shortcuts
+* Readability over cleverness
+* Modular design over monolithic logic
+* Scalability through clean separation
+* Realistic production-ready practices
+
+The system must feel:
+
+* Organized
+* Predictable
+* Extensible
+* Consistent
+
+---
+
+# 2. OOP Principles That MUST Be Followed
+
+# SOLID Principles
+
+## S — Single Responsibility Principle
+
+Every class, component, service, and module must only have one clear responsibility.
+
+### GOOD
+
+* AuthService handles authentication only
+* MarketplaceService handles marketplace logic only
+* NotificationService handles notifications only
+
+### BAD
+
+* One service handling authentication, marketplace, notifications, and file uploads together
+
+---
+
+## O — Open/Closed Principle
+
+Code should be open for extension but closed for modification.
+
+New features should be added without rewriting existing stable logic.
+
+### GOOD
+
+* Add new notification types without rewriting NotificationService
+* Add new achievement rules through separate strategy classes
+
+### BAD
+
+* Giant switch statements modified repeatedly
+
+---
+
+## L — Liskov Substitution Principle
+
+Child implementations must behave correctly when replacing parent abstractions.
+
+Avoid inheritance misuse.
+
+### GOOD
+
+* AdminUser extends User safely
+* Notification implementations follow shared contract
+
+### BAD
+
+* Child classes changing expected behavior unpredictably
+
+---
+
+## I — Interface Segregation Principle
+
+Interfaces must remain small and focused.
+
+### GOOD
+
+* ReservationService interface only contains reservation operations
+* ProfileService interface only handles profile behavior
+
+### BAD
+
+* One giant interface for unrelated features
+
+---
+
+## D — Dependency Inversion Principle
+
+High-level modules should depend on abstractions, not concrete implementations.
+
+### GOOD
+
+* Services depend on interfaces
+* Controllers depend on service abstractions
+
+### BAD
+
+* Controllers directly accessing repositories everywhere
+
+---
+
+# 3. Backend Architecture Standards
+
+The backend must follow strict layered architecture.
+
+# Required Backend Layers
+
+## Controller Layer
+
+Responsibilities:
+
+* Handle HTTP requests
+* Validate input
+* Return API responses
+* Call services only
+
+Controllers MUST NOT:
+
+* Contain business logic
+* Access repositories directly
+* Handle database operations
+
+---
+
+## Service Layer
+
+Responsibilities:
+
+* Business rules
+* Validation logic
+* Feature orchestration
+* Transaction handling
+
+Services MUST:
+
+* Be modular
+* Be reusable
+* Contain feature-specific logic only
+
+---
+
+## Repository Layer
+
+Responsibilities:
+
+* Database operations only
+* JPA queries
+* Persistence logic
+
+Repositories MUST NOT:
+
+* Contain business rules
+* Handle validation
+* Perform service orchestration
+
+---
+
+## DTO Layer
+
+DTOs MUST:
+
+* Separate API contracts from database entities
+* Prevent direct entity exposure
+* Be immutable where possible
+
+Never expose entities directly to frontend clients.
+
+---
+
+## Entity Layer
+
+Entities must:
+
+* Represent database models only
+* Avoid complex business logic
+* Maintain proper relationships
+
+Entities should remain lightweight.
+
+---
+
+# 4. Frontend Architecture Standards
+
+The frontend must follow component-driven modular architecture.
+
+# Frontend Structure
+
+## Feature-Based Organization
+
+Frontend folders must be grouped by feature, not by file type.
+
+### GOOD
+
+/features
+/auth
+/marketplace
+/profile
+/events
+
+### BAD
+
+/components
+/pages
+/hooks
+/utils
+(all mixed globally)
+
+---
+
+# Component Design Principles
+
+## Smart vs Dumb Components
+
+### Smart Components
+
+Responsibilities:
+
+* Fetch data
+* Handle logic
+* Manage state
+
+### Dumb Components
+
+Responsibilities:
+
+* Render UI only
+* Receive props
+* Emit events
+
+Keep presentation separate from logic.
+
+---
+
+# Reusability Standards
+
+Reusable components should exist for:
+
+* Buttons
+* Inputs
+* Modals
+* Cards
+* Tables
+* Pagination
+* Loaders
+* Empty states
+
+Avoid duplicate UI implementations.
+
+---
+
+# State Management Rules
+
+Global state should only contain:
+
+* Authentication state
+* Theme state
+* User session state
+* Notification state
+
+Feature-specific state should remain local whenever possible.
+
+Avoid unnecessary global state complexity.
+
+---
+
+# 5. Naming Conventions
+
+# Backend Naming
+
+## Services
+
+* AuthService
+* MarketplaceService
+* EventService
+
+## Controllers
+
+* AuthController
+* MarketplaceController
+
+## DTOs
+
+* CreateListingRequest
+* LoginRequest
+* UserProfileResponse
+
+## Entities
+
+* User
+* MarketplaceListing
+* Reservation
+
+---
+
+# Frontend Naming
+
+## Components
+
+* MarketplaceCard
+* ProfileHeader
+* EventModal
+
+## Hooks
+
+* useAuth
+* useMarketplace
+* useNotifications
+
+## Pages
+
+* MarketplacePage
+* DashboardPage
+* EventDetailsPage
+
+---
+
+# 6. Clean Code Standards
+
+# General Rules
+
+Code must be:
+
+* Readable
+* Predictable
+* Consistent
+* Self-explanatory
+
+---
+
+# Function Standards
+
+Functions must:
+
+* Be short
+* Do one thing only
+* Have clear names
+* Avoid excessive nesting
+
+### GOOD
+
+calculateReservationExpiry()
+
+### BAD
+
+processStuff()
+
+---
+
+# Class Standards
+
+Classes must:
+
+* Have one clear purpose
+* Remain reasonably small
+* Avoid unrelated responsibilities
+
+Avoid giant service classes.
+
+---
+
+# Comment Standards
+
+Only write comments when necessary.
+
+DO NOT write obvious comments.
+
+### BAD
+
+// Increment count
+count++;
+
+### GOOD
+
+// Reservation expiration follows campus merchandise policy
+expireReservation();
+
+---
+
+# 7. Database Design Standards
+
+# Entity Relationship Standards
+
+Relationships must be:
+
+* Properly normalized
+* Explicitly defined
+* Indexed when necessary
+
+---
+
+# Use Proper Relationships
+
+Use:
+
+* OneToMany
+* ManyToOne
+* ManyToMany only when necessary
+
+Avoid excessive bidirectional relationships.
+
+---
+
+# Avoid Database Anti-Patterns
+
+DO NOT:
+
+* Store unnecessary duplicate data
+* Overuse JSON columns
+* Create massive unstructured tables
+
+---
+
+# Audit Fields
+
+Important entities should contain:
+
+* createdAt
+* updatedAt
+
+Optionally:
+
+* createdBy
+* updatedBy
+
+---
+
+# 8. API Design Standards
+
+# REST API Principles
+
+Use proper REST conventions.
+
+### GOOD
+
+GET /api/marketplace
+POST /api/marketplace
+GET /api/events/{id}
+
+### BAD
+
+POST /api/getMarketplaceData
+
+---
+
+# HTTP Standards
+
+Use correct status codes:
+
+* 200 OK
+* 201 Created
+* 400 Bad Request
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found
+* 500 Internal Server Error
+
+---
+
+# Response Standards
+
+Responses must remain consistent.
+
+### GOOD
+
+{
+"success": true,
+"message": "Listing created successfully",
+"data": {}
+}
+
+---
+
+# 9. Security Engineering Standards
+
+# Authentication Standards
+
+Passwords must:
+
+* Be hashed using BCrypt
+* Never be stored raw
+
+---
+
+# Authorization Standards
+
+Protected routes must:
+
+* Validate JWT tokens
+* Validate user roles
+
+---
+
+# Input Validation Standards
+
+Validate:
+
+* Request payloads
+* Uploaded files
+* User-generated content
+
+Never trust frontend validation alone.
+
+---
+
+# 10. File Upload Standards
+
+Uploaded files must:
+
+* Validate file size
+* Validate MIME types
+* Generate unique filenames
+
+Never trust client-provided filenames.
+
+---
+
+# 11. Error Handling Standards
+
+# Backend Error Handling
+
+Use:
+
+* Global exception handlers
+* Consistent API error responses
+
+Avoid:
+
+* Returning stack traces to frontend
+
+---
+
+# Frontend Error Handling
+
+UI must:
+
+* Show friendly messages
+* Handle loading states
+* Handle empty states
+* Handle API failures gracefully
+
+---
+
+# 12. Performance Standards
+
+# Frontend Performance
+
+Must implement:
+
+* Lazy loading
+* Component memoization where needed
+* Image optimization
+* Pagination
+
+Avoid:
+
+* Unnecessary re-renders
+* Massive initial bundle sizes
+
+---
+
+# Backend Performance
+
+Must implement:
+
+* Pagination
+* Query optimization
+* Indexed search columns
+
+Avoid:
+
+* N+1 query problems
+* Unbounded queries
+
+---
+
+# 13. UI/UX Engineering Philosophy
+
+The UI should feel:
+
+* Clean
+* Modern
+* Lightweight
+* Student-friendly
+
+Avoid:
+
+* Excessive animations
+* Overwhelming interfaces
+* Cluttered layouts
+
+Animations should enhance UX, not distract from it.
+
+---
+
+# 14. Gamification Engineering Philosophy
+
+Gamification systems must remain:
+
+* Lightweight
+* Optional
+* Non-addictive
+* Cosmetic-focused
+
+The Bulldog Chibi system exists for engagement and identity, not as a full game engine.
+
+Avoid:
+
+* Complex AI systems
+* Massive progression trees
+* Heavy simulation mechanics
+
+---
+
+# 15. AI Coding Assistant Context
+
+When generating code:
+
+* Prioritize maintainability
+* Avoid unnecessary abstractions
+* Avoid premature optimization
+* Follow existing architecture
+* Keep implementations modular
+* Reuse existing utilities and components
+
+AI-generated code must:
+
+* Follow project naming standards
+* Respect layering rules
+* Use DTOs correctly
+* Avoid duplicated business logic
+
+---
+
+# 16. Engineering Anti-Patterns To Avoid
+
+DO NOT:
+
+* Create god components
+* Create god services
+* Mix frontend and backend concerns
+* Put business logic inside controllers
+* Access repositories directly from controllers
+* Use massive utility classes
+* Duplicate validation logic
+* Hardcode configurations
+* Overuse inheritance
+* Create deeply nested component trees
+* Use any type excessively in TypeScript
+
+---
+
+# 17. Preferred Design Patterns
+
+Recommended patterns:
+
+* Service Layer Pattern
+* Repository Pattern
+* DTO Pattern
+* Factory Pattern (when needed)
+* Strategy Pattern (for achievements or XP rules)
+* Builder Pattern (complex object creation)
+* Observer/Event Pattern (notifications)
+
+Avoid unnecessary patterns if they add complexity without value.
+
+---
+
+# 18. Development Workflow Standards
+
+Development must follow:
+
+* Small modular commits
+* Feature-by-feature implementation
+* Consistent naming conventions
+* Reusable components first
+* Backend-first API contracts
+
+Each feature should be:
+
+* Fully functional
+* Tested
+* Cleanly integrated
+* Production-oriented
+
+before moving to the next module.
+
+---

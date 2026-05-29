@@ -1,0 +1,818 @@
+# NUverse Laguna — Low Level Technical Requirements
+
+# 1. System Overview
+
+NUverse Laguna is a campus-exclusive full-stack web application designed for National University Laguna students, faculty, and administrators. The platform centralizes campus interaction, marketplace services, merchandise reservation, announcements, and lightweight social engagement into a single maintainable and production-ready ecosystem.
+
+The system must prioritize:
+
+* Maintainability
+* Scalability
+* Security
+* Simplicity
+* Clean architecture
+* Responsive design
+* Modular implementation
+* Realistic production-ready practices
+
+The system must avoid unnecessary complexity and fantasy-level features.
+
+---
+
+# 2. Recommended Technology Stack
+
+## Frontend
+
+* React
+* TypeScript
+* Vite
+* React Router
+* Axios
+* Tailwind CSS
+* Zustand or Context API
+* React Hook Form
+* Zod Validation
+
+## Backend
+
+* Java 21
+* Spring Boot
+* Spring Security
+* Spring Data JPA
+* Hibernate
+* Maven
+
+## Database
+
+* PostgreSQL
+
+## File Storage
+
+* Local storage during development
+* Cloudinary or Supabase Storage for production-ready image handling
+
+## Authentication
+
+* JWT Authentication
+* HTTP-only cookies
+
+## Version Control
+
+* Git
+* GitHub
+
+## Development Environment
+
+* Visual Studio Code
+
+---
+
+# 3. System Architecture
+
+The application must follow a modular layered architecture.
+
+## Backend Layers
+
+### Controller Layer
+
+Responsibilities:
+
+* Handle HTTP requests
+* Validate request payloads
+* Return API responses
+
+### Service Layer
+
+Responsibilities:
+
+* Business logic
+* Transaction management
+* Validation rules
+* Feature orchestration
+
+### Repository Layer
+
+Responsibilities:
+
+* Database access
+* JPA repository operations
+
+### Entity Layer
+
+Responsibilities:
+
+* Database entity mapping
+* Relationships
+* Persistence models
+
+### DTO Layer
+
+Responsibilities:
+
+* Request and response models
+* Prevent entity exposure
+
+---
+
+# 4. User Roles
+
+## Student
+
+Permissions:
+
+* Register/login
+* Edit profile
+* Create marketplace listings
+* Reserve merchandise
+* Join events
+* Submit suggestions
+* Create lost/found reports
+
+## Faculty
+
+Permissions:
+
+* Same as student
+* Optional elevated posting privileges
+
+## Administrator
+
+Permissions:
+
+* Moderate users
+* Manage marketplace reports
+* Manage merchandise inventory
+* Manage announcements
+* Manage events
+* Manage suggestions
+* View system statistics
+
+---
+
+# 5. Authentication Module Requirements
+
+## Registration Requirements
+
+* Accept NU-affiliated email only
+* Validate email domain
+* Require unique email
+* Require strong password
+* Require email verification
+
+## Login Requirements
+
+* Email and password authentication
+* JWT token generation
+* Secure cookie storage
+* Session persistence
+* Logout support
+
+## Security Requirements
+
+* BCrypt password hashing
+* Protected API routes
+* Role-based authorization
+* CSRF protection where applicable
+* Input validation
+* SQL injection prevention
+* XSS prevention
+
+---
+
+# 6. User Profile Module Requirements
+
+## Profile Fields
+
+* Profile image
+* Full name
+* Course/program
+* Year level
+* Bio
+* Interests
+
+## Functional Requirements
+
+Users must be able to:
+
+* Edit profile
+* Upload profile image
+* Follow/unfollow users
+* Toggle profile visibility
+* View public profiles
+
+## Privacy Settings
+
+Users may:
+
+* Set profile to public/private
+* Hide marketplace activity
+* Hide Bulldog Chibi showcase
+
+---
+
+# 7. Home Dashboard Requirements
+
+## Dashboard Components
+
+* Welcome section
+* User information preview
+* Marketplace highlights
+* Event highlights
+* Bulldog Exchange highlights
+* Announcement section
+* XP level preview
+
+## Functional Requirements
+
+* Personalized dashboard data
+* Responsive layout
+* Real-time updated content on refresh
+* Quick action navigation buttons
+
+---
+
+# 8. Marketplace Module Requirements
+
+## Marketplace Listing Requirements
+
+Each listing must contain:
+
+* Title
+* Description
+* Price
+* Condition
+* Category
+* Images
+* Seller information
+* Availability status
+* Created date
+
+## Marketplace Categories
+
+* School supplies
+* Books
+* Gadgets
+* Uniforms
+* Accessories
+* Dorm essentials
+* Food
+* Services
+* Art commissions
+
+## Functional Requirements
+
+### Sellers Must Be Able To
+
+* Create listing
+* Edit listing
+* Delete listing
+* Mark listing as sold
+* Upload multiple images
+
+### Buyers Must Be Able To
+
+* Browse listings
+* Search products
+* Filter products
+* Save listings
+* Report listings
+
+## Search Requirements
+
+Search must support:
+
+* Keyword search
+* Category filtering
+* Price filtering
+* Availability filtering
+
+## Moderation Requirements
+
+Administrators must be able to:
+
+* Remove listings
+* Suspend listings
+* Review reports
+
+---
+
+# 9. Bulldog Exchange Module Requirements
+
+## Merchandise Product Requirements
+
+Each merchandise product must contain:
+
+* Product name
+* Description
+* Price
+* Product images
+* Available stock
+* Size variants
+* Color variants
+* Availability status
+
+## Reservation Rules
+
+* Maximum of 2 reservations per product per user
+* Reservation expires after 48 hours
+* Expired reservations automatically restore stock
+
+## Functional Requirements
+
+### Students Must Be Able To
+
+* View merchandise
+* Check stock availability
+* Reserve products
+* Cancel reservations
+* Receive reservation notifications
+
+### Administrators Must Be Able To
+
+* Add products
+* Update inventory
+* Remove products
+* Modify stock
+* View reservations
+
+## Automated Requirements
+
+* Scheduled task for expired reservations
+* Automatic stock restoration
+* Reservation expiration checker
+
+---
+
+# 10. Bulldog Chibi Module Requirements
+
+## Chibi Requirements
+
+Each user must own:
+
+* One Bulldog Chibi profile
+
+## Chibi Customization
+
+Users may customize:
+
+* Hat
+* Clothes
+* Accessories
+* Color themes
+
+## XP System Requirements
+
+XP may be earned through:
+
+* Daily login
+* Marketplace activity
+* Event participation
+* Platform interaction
+
+## Functional Requirements
+
+Users must be able to:
+
+* Rename Chibi
+* Feed Chibi
+* Equip cosmetics
+* View unlocked cosmetics
+
+## Animation Requirements
+
+Animations must remain:
+
+* Lightweight
+* CSS-based when possible
+* Performance-friendly
+
+---
+
+# 11. Achievement and Title Module Requirements
+
+## Achievement Requirements
+
+Achievements may be unlocked through:
+
+* Login streaks
+* Marketplace participation
+* Event participation
+* Community engagement
+
+## Title Requirements
+
+Users may equip unlocked titles.
+
+## Functional Requirements
+
+* Achievement tracking
+* XP accumulation
+* Title assignment
+* Public profile title display
+
+---
+
+# 12. Campus Event Module Requirements
+
+## Event Requirements
+
+Each event must contain:
+
+* Title
+* Description
+* Banner image
+* Venue
+* Date and time
+* Organizer information
+
+## Functional Requirements
+
+### Users Must Be Able To
+
+* Browse events
+* RSVP to events
+* Save events
+* Share events
+
+### Administrators Must Be Able To
+
+* Create events
+* Edit events
+* Delete events
+* Manage attendees
+
+## Event Categories
+
+* Academic
+* Sports
+* Workshops
+* Competitions
+* Student organizations
+
+---
+
+# 13. Lost and Found Module Requirements
+
+## Lost Item Requirements
+
+Each report must contain:
+
+* Item name
+* Description
+* Item image
+* Date lost/found
+* Last known location
+* Status
+
+## Functional Requirements
+
+Users must be able to:
+
+* Create reports
+* Edit reports
+* Mark item as resolved
+* Search reports
+
+## Search Filters
+
+* Category
+* Status
+* Date
+* Location
+
+## Moderation Requirements
+
+Administrators may:
+
+* Remove fake reports
+* Archive resolved reports
+
+---
+
+# 14. Suggestion and Feedback Module Requirements
+
+## Suggestion Requirements
+
+Each suggestion must contain:
+
+* Title
+* Description
+* Submission date
+* Status
+
+## Functional Requirements
+
+Users must be able to:
+
+* Submit suggestions
+* Upvote suggestions
+* View suggestion status
+
+## Administrator Requirements
+
+Administrators may:
+
+* Change suggestion status
+* Mark suggestions as implemented
+* Reject suggestions
+
+---
+
+# 15. Notification Module Requirements
+
+## Notification Types
+
+* Reservation notifications
+* Marketplace notifications
+* Event notifications
+* Achievement notifications
+* Announcement notifications
+
+## Functional Requirements
+
+Users must be able to:
+
+* View notifications
+* Mark notifications as read
+* Delete notifications
+
+## Notification Behavior
+
+* Notifications must be ordered by newest first
+* Unread notifications must be visually highlighted
+
+---
+
+# 16. Emergency Announcement Module Requirements
+
+## Announcement Requirements
+
+Each announcement must contain:
+
+* Title
+* Description
+* Priority level
+* Created date
+
+## Priority Levels
+
+* General
+* Important
+* Critical
+
+## Functional Requirements
+
+Administrators must be able to:
+
+* Publish announcements
+* Edit announcements
+* Archive announcements
+
+Critical announcements must:
+
+* Display prominently on dashboard
+* Override regular announcements visually
+
+---
+
+# 17. Inspire Sports Academy Module Requirements
+
+## Functional Requirements
+
+The module must provide:
+
+* Academy information
+* Downloadable forms
+* External links
+* Contact information
+
+## External Link Requirements
+
+Support links for:
+
+* Facebook pages
+* Registration forms
+* Official inquiries
+
+---
+
+# 18. NUIS Integration Requirements
+
+## Functional Requirements
+
+* Redirect users to official NUIS portal
+* Open in new browser tab
+* Maintain clean navigation experience
+
+---
+
+# 19. UI/UX Requirements
+
+## Design Requirements
+
+The UI must:
+
+* Be responsive
+* Support desktop and mobile layouts
+* Maintain visual consistency
+* Follow modern UI standards
+
+## Theme Requirements
+
+Support:
+
+* Light Mode
+* Dark Mode
+
+## Animation Requirements
+
+Animations must:
+
+* Be smooth
+* Be lightweight
+* Avoid excessive GPU usage
+* Use CSS transitions where possible
+
+## Accessibility Requirements
+
+* Readable font sizes
+* Proper button spacing
+* Keyboard accessibility
+* Sufficient color contrast
+
+---
+
+# 20. File Upload Requirements
+
+## Supported Upload Types
+
+* JPG
+* PNG
+* WEBP
+
+## Upload Targets
+
+* Profile images
+* Marketplace images
+* Merchandise images
+* Event banners
+* Lost and found images
+
+## Upload Restrictions
+
+* File size validation
+* Image type validation
+* Maximum upload limit
+
+---
+
+# 21. Database Requirements
+
+## Database Engine
+
+* PostgreSQL
+
+## Database Standards
+
+* Use UUID primary keys where applicable
+* Normalize relational data
+* Use foreign key constraints
+* Implement indexing for search-heavy tables
+
+## Core Database Entities
+
+* Users
+* Roles
+* Profiles
+* MarketplaceListings
+* MarketplaceImages
+* MerchandiseProducts
+* Reservations
+* ChibiProfiles
+* Achievements
+* Titles
+* Events
+* RSVPs
+* LostFoundReports
+* Suggestions
+* Notifications
+* Announcements
+
+---
+
+# 22. API Requirements
+
+## API Standards
+
+* RESTful API design
+* JSON request/response format
+* Proper HTTP status codes
+* Global exception handling
+
+## Authentication Endpoints
+
+* Register
+* Login
+* Logout
+* Refresh token
+
+## API Security
+
+* JWT validation
+* Protected routes
+* Role-based access control
+
+---
+
+# 23. Performance Requirements
+
+## Frontend Performance
+
+* Lazy loading for pages
+* Optimized image rendering
+* Minimized re-renders
+
+## Backend Performance
+
+* Pagination support
+* Query optimization
+* Proper indexing
+
+## Scalability Requirements
+
+* Modular backend architecture
+* Service separation readiness
+* Reusable frontend components
+
+---
+
+# 24. Logging and Error Handling Requirements
+
+## Backend Logging
+
+* Request logging
+* Error logging
+* Authentication logging
+
+## Error Handling
+
+* Global exception handler
+* User-friendly error responses
+* Validation error handling
+
+---
+
+# 25. Testing Requirements
+
+## Frontend Testing
+
+* Component testing
+* Form validation testing
+
+## Backend Testing
+
+* Unit testing
+* Service layer testing
+* Authentication testing
+
+---
+
+# 26. Deployment Requirements
+
+## Frontend Deployment
+
+* Vercel or Netlify
+
+## Backend Deployment
+
+* Render, Railway, or VPS
+
+## Database Deployment
+
+* Supabase PostgreSQL or Neon PostgreSQL
+
+---
+
+# 27. Coding Standards
+
+## Frontend Standards
+
+* Strong TypeScript typing
+* Reusable components
+* Feature-based folder structure
+
+## Backend Standards
+
+* SOLID principles
+* DTO usage
+* Service abstraction
+* Repository pattern
+
+## General Standards
+
+* Clean code practices
+* Meaningful naming conventions
+* Modular implementation
+* Proper documentation
+
+---
