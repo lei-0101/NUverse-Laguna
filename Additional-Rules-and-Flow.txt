@@ -1,0 +1,462 @@
+# NUverse Laguna — Engineering Standards & AI Development Context
+
+# Core Engineering Mindset
+
+NUverse Laguna is a production-style modular monolith built using:
+
+* Java Spring Boot
+* React TypeScript
+* PostgreSQL
+
+The system must feel:
+
+* modular
+* maintainable
+* scalable
+* predictable
+* cleanly architected
+* domain-driven
+
+Always prioritize:
+Correctness → Maintainability → Readability → Scalability
+
+Avoid:
+
+* overengineering
+* premature optimization
+* tightly coupled code
+* tutorial-style architecture
+* giant classes
+* unnecessary abstractions
+
+The goal is to build a polished, portfolio-grade campus ecosystem with realistic engineering practices.
+
+---
+
+# Core Architecture
+
+Required backend architecture:
+
+Controller
+→ Application Service
+→ Domain
+→ Repository
+→ Database
+
+Business logic MUST live inside the domain layer.
+
+Controllers must remain thin.
+
+Repositories must only handle persistence.
+
+Application services handle:
+
+* use-case orchestration
+* transactions
+* module coordination
+
+---
+
+# OOP Rules (MANDATORY)
+
+Strictly follow:
+
+* SOLID principles
+* GRASP principles
+* composition over inheritance
+* encapsulation
+* abstraction
+* loose coupling
+* high cohesion
+
+Prefer:
+
+* interfaces
+* strategy pattern
+* delegation
+* composition
+
+Avoid:
+
+* deep inheritance
+* god classes
+* utility abuse
+* procedural services
+* giant controllers
+* cyclic dependencies
+
+Entities must contain behavior, not just getters/setters.
+
+GOOD:
+
+* reservation.expire()
+* inventory.reserveStock()
+* listing.markAsSold()
+
+BAD:
+
+* reservationService.doEverything()
+
+---
+
+# Modular Monolith Rules
+
+Each module must be isolated and self-contained.
+
+Required structure:
+
+module/
+
+* controller
+* application
+* domain
+* repository
+* infrastructure
+* dto
+* mapper
+
+Modules communicate using:
+
+* interfaces
+* domain events
+* application services
+
+Avoid direct cross-module entity manipulation.
+
+---
+
+# Backend Standards
+
+Required stack:
+
+* Java 21
+* Spring Boot
+* Spring Security
+* Spring Data JPA
+* Hibernate
+* PostgreSQL
+* JWT Authentication
+
+Mandatory:
+
+* constructor injection only
+* DTOs for API contracts
+* @Transactional in application services only
+* Flyway migrations
+* MapStruct mapping
+* SLF4J logging
+* UUID primary keys
+* centralized exception handling
+* Jakarta validation
+
+Forbidden:
+
+* field injection
+* exposing entities directly
+* business logic in controllers
+* System.out.println
+* hardcoded secrets
+* magic strings
+
+---
+
+# Security Rules
+
+Mandatory:
+
+* BCrypt password hashing
+* JWT authentication
+* role-based authorization
+* backend validation
+* input sanitization
+* rate limiting
+* SQL injection prevention
+* XSS protection
+
+JWT must NOT be stored in localStorage.
+
+Use HTTP-only cookies.
+
+Never trust frontend validation alone.
+
+---
+
+# Database Rules
+
+Use PostgreSQL only.
+
+Required:
+
+* UUID primary keys
+* indexed foreign keys
+* created_at
+* updated_at
+
+Use:
+
+* pagination
+* projections
+* fetch joins
+* indexed search columns
+
+Avoid:
+
+* N+1 queries
+* unnecessary eager loading
+
+Use pessimistic locking for:
+
+* merchandise reservation stock updates
+
+---
+
+# Frontend Standards
+
+Required stack:
+
+* React
+* TypeScript
+* Vite
+* TailwindCSS
+* Zustand
+* TanStack Query
+* Axios
+* React Hook Form
+* Zod
+
+Use feature-based architecture.
+
+Required structure:
+
+src/
+
+* modules
+* shared
+* components
+* hooks
+* services
+* store
+* layouts
+* routes
+* themes
+
+---
+
+# React Rules
+
+Components must:
+
+* be reusable
+* remain focused
+* support accessibility
+* support dark/light mode
+
+Separate:
+
+* presentation logic
+* business logic
+
+Use:
+
+* Zustand for global app state
+* TanStack Query for server state
+
+Avoid:
+
+* prop drilling
+* duplicated API logic
+* large monolithic components
+
+---
+
+# TypeScript Rules
+
+Strict typing is mandatory.
+
+Forbidden:
+
+* any
+* unsafe casting
+* loosely typed responses
+
+Prefer:
+
+* interfaces
+* typed DTOs
+* discriminated unions
+
+---
+
+# Domain-Driven Design Rules
+
+Focus on:
+
+* business behavior
+* workflows
+* domain rules
+* invariants
+
+Think in behaviors:
+
+* Reserve inventory
+* Award XP
+* Follow user
+* Expire reservation
+
+NOT:
+
+* Update table row
+* Save entity directly
+
+Avoid anemic domain models.
+
+---
+
+# Event-Driven Rules
+
+Cross-module communication should prefer domain events.
+
+Example:
+ReservationCreatedEvent
+→ Notification Module
+→ Gamification Module
+
+Benefits:
+
+* loose coupling
+* extensibility
+* maintainability
+
+---
+
+# Gamification Rules
+
+Gamification must remain:
+
+* lightweight
+* rewarding
+* maintainable
+
+NOT:
+
+* noisy
+* overly complex
+* simulation-heavy
+
+XP systems should use Strategy Pattern.
+
+Bulldog Chibi systems must remain cosmetic-focused and performant.
+
+---
+
+# UI/UX Rules
+
+The UI must feel:
+
+* modern
+* lightweight
+* responsive
+* accessible
+* clean
+
+Avoid:
+
+* visual clutter
+* excessive animations
+* unnecessary effects
+
+Animations must be:
+
+* subtle
+* smooth
+* GPU-friendly
+
+Support:
+
+* Light Mode
+* Dark Mode
+
+---
+
+# Testing Requirements
+
+Backend:
+
+* JUnit 5
+* Mockito
+* Testcontainers
+
+Frontend:
+
+* Vitest
+* React Testing Library
+
+Test:
+
+* business rules
+* workflows
+* edge cases
+* state transitions
+
+Avoid useless tests like getter/setter testing.
+
+Minimum target coverage:
+
+* 80%
+
+---
+
+# Performance Rules
+
+Required:
+
+* pagination
+* lazy loading
+* image optimization
+* memoization where needed
+* virtualization for large lists
+
+Avoid premature optimization.
+
+Optimize realistically.
+
+---
+
+# Documentation Rules
+
+For every feature:
+
+1. Explain business purpose
+2. Explain architecture decisions
+3. Explain domain rules
+4. List affected modules
+5. List endpoints
+6. List entities/services involved
+
+Update:
+
+* changelog.md
+* feature summaries
+* architecture notes when needed
+
+---
+
+# Development Workflow
+
+Before implementation:
+
+1. Understand requirements
+2. Identify domain concepts
+3. Define business rules
+4. Define invariants
+5. Design architecture
+6. Define API contracts
+7. Define DTOs
+8. THEN implement
+
+No implementation without reasoning first.
+
+Before generating large implementations, ALWAYS ask:
+"Do you want me to proceed with implementing this feature?"
+
+---
