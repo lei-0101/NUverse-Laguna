@@ -1,0 +1,2 @@
+ALTER TABLE merchandise_products
+    ADD COLUMN IF NOT EXISTS limited BOOLEAN NOT NULL DEFAULT FALSE;

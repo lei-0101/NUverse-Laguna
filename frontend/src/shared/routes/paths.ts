@@ -21,8 +21,12 @@ export const paths = {
   exchange: '/exchange',
   exchangeNew: '/exchange/new',
   myReservations: '/exchange/reservations',
+  /** Printable reservation invoice */
+  reservationInvoice: '/exchange/reservations/:reservationId/invoice',
   /** Route pattern for a single product's detail page. */
   exchangeProduct: '/exchange/:productId',
+  /** Route pattern for editing a product. */
+  exchangeProductEdit: '/exchange/:productId/edit',
   /** In-app notifications feed. */
   notifications: '/notifications',
   /** Campus Events */
@@ -35,12 +39,20 @@ export const paths = {
   eventEdit: '/events/:eventId/edit',
   /** Lost & Found */
   lostFound: '/lost-found',
-  /** Suggestions & Feedback */
-  suggestions: '/suggestions',
+  /** Route pattern for a single lost & found item detail page. */
+  lostFoundDetail: '/lost-found/:itemId',
   /** Settings */
   settings: '/settings',
   /** Bulldog Chibi */
   chibi: '/chibi',
+  /** Announcements — student browse view */
+  announcements: '/announcements',
+  /** Announcement detail page */
+  announcementDetail: '/announcements/:announcementId',
+  /** Route pattern for editing an announcement */
+  announcementEdit: '/announcements/:announcementId/edit',
+  /** Direct Messages */
+  messages: '/messages',
   /** Admin Panel */
   admin: '/admin',
   /** Inspire Sports Academy */
@@ -69,6 +81,11 @@ export function exchangeProductPath(productId: string): string {
   return `/exchange/${productId}`
 }
 
+/** Builds the link to a product's edit page. */
+export function editExchangeProductPath(productId: string): string {
+  return `/exchange/${productId}/edit`
+}
+
 /** Builds the link to a single event's detail page. */
 export function eventDetailPath(eventId: string): string {
   return `/events/${eventId}`
@@ -77,4 +94,24 @@ export function eventDetailPath(eventId: string): string {
 /** Builds the link to an event's edit page. */
 export function editEventPath(eventId: string): string {
   return `/events/${eventId}/edit`
+}
+
+/** Builds the link to a reservation's printable invoice. */
+export function reservationInvoicePath(reservationId: string): string {
+  return `/exchange/reservations/${reservationId}/invoice`
+}
+
+/** Builds the link to a single announcement's detail page. */
+export function announcementDetailPath(announcementId: string): string {
+  return `/announcements/${announcementId}`
+}
+
+/** Builds the link to an announcement's edit page. */
+export function editAnnouncementPath(announcementId: string): string {
+  return `/announcements/${announcementId}/edit`
+}
+
+/** Builds the link to a single lost & found item's detail page. */
+export function lostFoundDetailPath(itemId: string): string {
+  return `/lost-found/${itemId}`
 }

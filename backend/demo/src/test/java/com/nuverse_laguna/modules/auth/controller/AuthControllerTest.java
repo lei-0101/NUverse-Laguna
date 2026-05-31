@@ -63,7 +63,7 @@ class AuthControllerTest {
     @DisplayName("register: valid request returns 201")
     void register_validRequest_returns201() throws Exception {
         RegisterRequest request = new RegisterRequest(
-                "juan@national-u.edu.ph", "Password1", "Juan Dela Cruz"
+                "juan@students.nu-laguna.edu.ph", "Password1", "Juan Dela Cruz"
         );
         doNothing().when(authService).register(any());
 
@@ -91,7 +91,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("register: weak password returns 400")
     void register_weakPassword_returns400() throws Exception {
-        RegisterRequest request = new RegisterRequest("juan@national-u.edu.ph", "weak", "Juan");
+        RegisterRequest request = new RegisterRequest("juan@students.nu-laguna.edu.ph", "weak", "Juan");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +105,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("register: blank full name returns 400")
     void register_blankName_returns400() throws Exception {
-        RegisterRequest request = new RegisterRequest("juan@national-u.edu.ph", "Password1", "");
+        RegisterRequest request = new RegisterRequest("juan@students.nu-laguna.edu.ph", "Password1", "");
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,7 +120,7 @@ class AuthControllerTest {
     void login_validCredentials_returns200WithCookie() throws Exception {
         UUID userId = UUID.randomUUID();
         UserResponse userResponse = new UserResponse(
-                userId, "juan@national-u.edu.ph", "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE"
+                userId, "juan@students.nu-laguna.edu.ph", "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE", null, 0, null
         );
         LoginResult loginResult = new LoginResult("jwt-token", userResponse);
         ResponseCookie cookie = ResponseCookie.from("access_token", "jwt-token")
@@ -132,11 +132,11 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("juan@national-u.edu.ph", "Password1"))))
+                                new LoginRequest("juan@students.nu-laguna.edu.ph", "Password1"))))
                 .andExpect(status().isOk())
                 .andExpect(header().exists(HttpHeaders.SET_COOKIE))
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value("juan@national-u.edu.ph"));
+                .andExpect(jsonPath("$.data.email").value("juan@students.nu-laguna.edu.ph"));
     }
 
     @Test
@@ -147,7 +147,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new LoginRequest("juan@national-u.edu.ph", "WrongPass1"))))
+                                new LoginRequest("juan@students.nu-laguna.edu.ph", "WrongPass1"))))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false));
     }
@@ -175,7 +175,7 @@ class AuthControllerTest {
     void me_authenticated_returns200() throws Exception {
         UUID userId = UUID.randomUUID();
         UserResponse userResponse = new UserResponse(
-                userId, "juan@national-u.edu.ph", "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE"
+                userId, "juan@students.nu-laguna.edu.ph", "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE", null, 0, null
         );
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 userId.toString(), null,
@@ -187,7 +187,7 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/auth/me").with(asUser(auth)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value("juan@national-u.edu.ph"));
+                .andExpect(jsonPath("$.data.email").value("juan@students.nu-laguna.edu.ph"));
     }
 
     // Sets both SecurityContextHolder and request.userPrincipal so standalone MockMvc

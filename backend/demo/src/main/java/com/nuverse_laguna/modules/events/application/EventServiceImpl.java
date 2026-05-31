@@ -2,9 +2,10 @@ package com.nuverse_laguna.modules.events.application;
 
 import com.nuverse_laguna.modules.events.domain.*;
 import com.nuverse_laguna.modules.events.dto.*;
-import com.nuverse_laguna.modules.events.repository.CampusEventRepository;
-import com.nuverse_laguna.modules.events.repository.EventRsvpRepository;
-import com.nuverse_laguna.modules.events.repository.EventSpecification;
+import com.nuverse_laguna.modules.events.repository.*;
+import com.nuverse_laguna.modules.profile.domain.UserProfile;
+import com.nuverse_laguna.modules.profile.repository.UserProfileRepository;
+import com.nuverse_laguna.shared.dto.ReactionSummary;
 import com.nuverse_laguna.shared.event.EventRsvpEvent;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.exception.ResourceNotFoundException;
@@ -20,7 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,6 +37,9 @@ public class EventServiceImpl implements EventService {
 
     private final CampusEventRepository eventRepository;
     private final EventRsvpRepository rsvpRepository;
+    private final EventReactionRepository reactionRepository;
+    private final EventCommentRepository commentRepository;
+    private final UserProfileRepository profileRepository;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -52,7 +60,7 @@ public class EventServiceImpl implements EventService {
         CampusEvent event = findEventOrThrow(eventId);
         long rsvpCount = rsvpRepository.countByEventIdAndStatus(eventId, RsvpStatus.ATTENDING);
         boolean isRsvpd = rsvpRepository.existsByEventIdAndUserIdAndStatus(eventId, viewerId, RsvpStatus.ATTENDING);
-        return toResponse(event, rsvpCount, isRsvpd);
+        return toResponseWithUser(event, rsvpCount, isRsvpd, viewerId);
     }
 
     @Override
@@ -183,6 +191,79 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<RsvpResponse> getAttendees(UUID eventId) {
+        return rsvpRepository.findAllByEventIdAndStatus(eventId, RsvpStatus.ATTENDING).stream()
+                .map(rsvp -> {
+                    CampusEvent event = findEventOrThrow(rsvp.getEventId());
+                    return new RsvpResponse(rsvp.getId(), event.getId(), event.getTitle(),
+                            event.getLocation(), event.getStartTime(), event.getStatus().name(),
+                            rsvp.getStatus().name(), rsvp.getCreatedAt());
+                }).toList();
+    }
+
+    @Override
+    public EventResponse toggleReaction(UUID eventId, UUID userId, String emoji) {
+        CampusEvent event = findEventOrThrow(eventId);
+        Optional<EventReaction> existing = reactionRepository.findByEventIdAndUserId(eventId, userId);
+        if (existing.isPresent()) {
+            reactionRepository.deleteByEventIdAndUserId(eventId, userId);
+        } else {
+            reactionRepository.save(EventReaction.create(eventId, userId, emoji));
+        }
+        long rsvpCount = rsvpRepository.countByEventIdAndStatus(eventId, RsvpStatus.ATTENDING);
+        boolean isRsvpd = rsvpRepository.existsByEventIdAndUserIdAndStatus(eventId, userId, RsvpStatus.ATTENDING);
+        return toResponseWithUser(event, rsvpCount, isRsvpd, userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReactionSummary> getReactions(UUID eventId) {
+        List<EventReaction> reactions = reactionRepository.findAllByEventId(eventId);
+        List<UUID> userIds = reactions.stream().map(EventReaction::getUserId).toList();
+        Map<UUID, UserProfile> profiles = profileRepository.findByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(UserProfile::getUserId, p -> p));
+        return reactions.stream()
+                .map(r -> new ReactionSummary(
+                        r.getUserId(),
+                        profiles.containsKey(r.getUserId()) ? profiles.get(r.getUserId()).getFullName() : "Unknown",
+                        profiles.containsKey(r.getUserId()) ? profiles.get(r.getUserId()).getAvatarUrl() : null,
+                        r.getEmoji()
+                )).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EventCommentResponse> getComments(UUID eventId) {
+        return commentRepository.findByEventIdOrderByCreatedAtAsc(eventId).stream()
+                .map(c -> new EventCommentResponse(c.getId(), c.getAuthorId(), c.getAuthorName(), c.getBody(), c.getCreatedAt()))
+                .toList();
+    }
+
+    @Override
+    public EventCommentResponse addComment(UUID eventId, UUID authorId, String authorName, String body) {
+        CampusEvent event = findEventOrThrow(eventId);
+        EventComment comment = commentRepository.save(EventComment.create(eventId, authorId, authorName, body));
+        return new EventCommentResponse(comment.getId(), comment.getAuthorId(), comment.getAuthorName(), comment.getBody(), comment.getCreatedAt());
+    }
+
+    @Override
+    public void deleteComment(UUID commentId, UUID userId) {
+        EventComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+        if (!comment.getAuthorId().equals(userId)) {
+            throw new AppException(HttpStatus.FORBIDDEN, "Only the comment author can delete it");
+        }
+        commentRepository.delete(comment);
+    }
+
+    @Override
+    public void adminDeleteComment(UUID commentId) {
+        EventComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+        commentRepository.delete(comment);
+    }
+
+    @Override
     public UploadImageResponse uploadImage(MultipartFile file) {
         String url = storageService.store(file, EVENTS_STORAGE_CATEGORY);
         return new UploadImageResponse(url);
@@ -203,11 +284,21 @@ public class EventServiceImpl implements EventService {
     }
 
     private EventResponse toResponse(CampusEvent e, long rsvpCount, boolean isRsvpd) {
+        return toResponseWithUser(e, rsvpCount, isRsvpd, null);
+    }
+
+    private EventResponse toResponseWithUser(CampusEvent e, long rsvpCount, boolean isRsvpd, UUID userId) {
+        long reactionCount = reactionRepository.countByEventId(e.getId());
+        long commentCount  = commentRepository.countByEventId(e.getId());
+        String userReaction = userId != null
+                ? reactionRepository.findByEventIdAndUserId(e.getId(), userId).map(EventReaction::getEmoji).orElse(null)
+                : null;
         return new EventResponse(
                 e.getId(), e.getCreatorId(), e.getTitle(), e.getDescription(),
                 e.getCategory().name(), e.getLocation(), e.getStartTime(), e.getEndTime(),
                 e.getCoverImageUrl(), e.getCapacity(), e.getStatus().name(),
-                rsvpCount, e.isRsvpOpen(), isRsvpd, e.getCreatedAt()
+                rsvpCount, e.isRsvpOpen(), isRsvpd, e.getCreatedAt(),
+                reactionCount, userReaction, commentCount
         );
     }
 

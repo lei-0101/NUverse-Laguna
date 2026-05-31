@@ -48,7 +48,7 @@ class AuthServiceImplTest {
 
     private AuthServiceImpl authService;
 
-    private static final String NU_EMAIL = "juan.delacruz@national-u.edu.ph";
+    private static final String NU_EMAIL = "juan.delacruz@students.nu-laguna.edu.ph";
     private static final String HASHED_PASSWORD = "$2a$10$hashedpasswordvalue";
 
     @BeforeEach
@@ -57,7 +57,7 @@ class AuthServiceImplTest {
                 userRepository, passwordEncoder, jwtService,
                 emailService, userMapper, authConfig, eventPublisher, "http://localhost:8080"
         );
-        when(authConfig.getAllowedEmailDomains()).thenReturn(List.of("national-u.edu.ph"));
+        when(authConfig.getAllowedEmailDomains()).thenReturn(List.of("students.nu-laguna.edu.ph"));
     }
 
     // ───────────────────── register ─────────────────────
@@ -109,7 +109,7 @@ class AuthServiceImplTest {
     void login_validCredentials_returnsLoginResult() {
         User activeUser = createActiveUser();
         UserResponse userResponse = new UserResponse(
-                activeUser.getId(), NU_EMAIL, "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE"
+                activeUser.getId(), NU_EMAIL, "Juan Dela Cruz", "ROLE_STUDENT", "ACTIVE", null, 0, null
         );
         LoginRequest request = new LoginRequest(NU_EMAIL, "Password1");
 
@@ -211,7 +211,7 @@ class AuthServiceImplTest {
     void getCurrentUser_found_returnsUserResponse() {
         User activeUser = createActiveUser();
         UUID userId = UUID.randomUUID();
-        UserResponse userResponse = new UserResponse(userId, NU_EMAIL, "Juan", "ROLE_STUDENT", "ACTIVE");
+        UserResponse userResponse = new UserResponse(userId, NU_EMAIL, "Juan", "ROLE_STUDENT", "ACTIVE", null, 0, null);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(activeUser));
         when(userMapper.toResponse(activeUser)).thenReturn(userResponse);

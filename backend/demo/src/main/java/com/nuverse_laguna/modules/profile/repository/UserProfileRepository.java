@@ -20,6 +20,8 @@ public interface UserProfileRepository extends JpaRepository<UserProfile, UUID> 
 
     List<UserProfile> findByUserIdIn(Collection<UUID> userIds);
 
+    List<UserProfile> findAllByUserIdIn(Collection<UUID> userIds);
+
     @Query("SELECT up FROM UserProfile up WHERE up.userId IN " +
            "(SELECT f.followerId FROM Follow f WHERE f.followingId = :userId)")
     Page<UserProfile> findFollowerProfiles(@Param("userId") UUID userId, Pageable pageable);

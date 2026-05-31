@@ -97,6 +97,10 @@ public class CampusEvent extends BaseEntity {
         this.status = EventStatus.CANCELLED;
     }
 
+    public void archive() {
+        this.status = EventStatus.ARCHIVED;
+    }
+
     /** True if new RSVPs are currently accepted for this event. */
     public boolean isRsvpOpen() {
         return this.status == EventStatus.PUBLISHED

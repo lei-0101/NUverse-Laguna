@@ -20,7 +20,7 @@ app:
     allowed-origins: http://localhost:5173
   auth:
     allowed-email-domains:
-      - national-u.edu.ph
+      - students.nu-laguna.edu.ph
   rate-limit:
     auth-requests-per-minute: 100
     api-requests-per-minute: 1000

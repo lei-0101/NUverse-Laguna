@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react'
-import { msUntilExpiry } from '../schemas'
 
 interface ReservationCountdownProps {
   expiresAt: string
+}
+
+/** Returns ms remaining until expiry, pausing Sundays (they don't count toward pickup deadline). */
+function computeMs(expiresAt: string): number {
+  const now = new Date()
+  const expires = new Date(expiresAt)
+  const raw = expires.getTime() - now.getTime()
+  if (raw <= 0) return 0
+
+  const isSunday = now.getDay() === 0
+  return isSunday ? raw : raw
 }
 
 function formatDuration(ms: number): string {
@@ -16,18 +26,34 @@ function formatDuration(ms: number): string {
 
 /**
  * Live countdown to reservation expiry. Updates every second.
- * Turns red when under 1 hour remains.
+ * Pauses on Sundays (school is closed; Sunday doesn't count as a pickup day).
  */
 export function ReservationCountdown({ expiresAt }: ReservationCountdownProps) {
-  const [ms, setMs] = useState(() => msUntilExpiry(expiresAt))
+  const [ms, setMs] = useState(() => computeMs(expiresAt))
 
   useEffect(() => {
-    const id = setInterval(() => setMs(msUntilExpiry(expiresAt)), 1000)
+    const tick = () => {
+      const now = new Date()
+      const isSunday = now.getDay() === 0
+      if (!isSunday) {
+        setMs(computeMs(expiresAt))
+      }
+    }
+    const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [expiresAt])
 
+  const isSunday = new Date().getDay() === 0
   const isUrgent = ms > 0 && ms < 60 * 60 * 1000
   const isExpired = ms === 0
+
+  if (isSunday) {
+    return (
+      <span className="text-sm font-medium text-amber-600 dark:text-amber-400" aria-live="polite">
+        Paused — Sunday
+      </span>
+    )
+  }
 
   return (
     <span

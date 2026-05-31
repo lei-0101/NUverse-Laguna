@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Alert, Button, Input, Select, Textarea } from '@/shared/components/ui'
-import { editProfileSchema, yearLevelOptions, type EditProfileFormValues } from '../schemas'
+import { editProfileSchema, SCHOOL_OPTIONS, type EditProfileFormValues } from '../schemas'
 
 interface ProfileFormProps {
   defaultValues: EditProfileFormValues
@@ -31,18 +31,12 @@ export function ProfileForm({
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
       {serverError && <Alert variant="error">{serverError}</Alert>}
       <Input label="Full name" error={errors.fullName?.message} {...register('fullName')} />
-      <Input
-        label="Course / Program"
-        placeholder="e.g. BS Computer Science"
+      <Select
+        label="School"
+        placeholder="Select your school"
+        options={SCHOOL_OPTIONS}
         error={errors.course?.message}
         {...register('course')}
-      />
-      <Select
-        label="Year level"
-        placeholder="Not set"
-        options={yearLevelOptions}
-        error={errors.yearLevel?.message}
-        {...register('yearLevel')}
       />
       <Textarea
         label="Bio"

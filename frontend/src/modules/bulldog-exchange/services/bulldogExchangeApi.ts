@@ -28,10 +28,22 @@ export const bulldogExchangeApi = {
 
   // ── Products ─────────────────────────────────────────────────────────────────
 
-  getProducts(category: MerchandiseCategory | null, page: number, size = 12): Promise<Page<ProductCard>> {
+  getProducts(
+    category: MerchandiseCategory | null,
+    gender: 'MALE' | 'FEMALE' | 'UNISEX' | null,
+    keyword: string | null,
+    page: number,
+    size = 12,
+  ): Promise<Page<ProductCard>> {
     return unwrap<Page<ProductCard>>(
       apiClient.get('/bulldog-exchange', {
-        params: { ...(category ? { category } : {}), page, size },
+        params: {
+          ...(category ? { category } : {}),
+          ...(gender ? { gender } : {}),
+          ...(keyword ? { keyword } : {}),
+          page,
+          size,
+        },
       }),
     )
   },
@@ -64,6 +76,16 @@ export const bulldogExchangeApi = {
     return unwrap<ProductVariant>(
       apiClient.patch(`/bulldog-exchange/variants/${variantId}/stock`, payload),
     )
+  },
+
+  updateVariant(variantId: string, payload: AddVariantPayload): Promise<ProductVariant> {
+    return unwrap<ProductVariant>(
+      apiClient.put(`/bulldog-exchange/variants/${variantId}`, payload),
+    )
+  },
+
+  deleteVariant(variantId: string): Promise<void> {
+    return apiClient.delete(`/bulldog-exchange/variants/${variantId}`).then(() => undefined)
   },
 
   // ── Reservations ──────────────────────────────────────────────────────────────

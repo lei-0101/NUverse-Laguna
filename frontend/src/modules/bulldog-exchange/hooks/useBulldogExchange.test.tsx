@@ -83,7 +83,7 @@ describe('useCreateReservation', () => {
 
 describe('exchangeKeys', () => {
   it('list key includes category and page', () => {
-    const key = exchangeKeys.list('CLOTHING', 2)
+    const key = exchangeKeys.list('CLOTHING', null, null, 2)
     expect(key).toContain('CLOTHING')
     expect(key).toContain(2)
   })

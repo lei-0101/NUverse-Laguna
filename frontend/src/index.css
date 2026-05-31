@@ -27,22 +27,51 @@
   --color-danger: #d92d20;
   --color-danger-foreground: #ffffff;
   --color-success: #1f9254;
+
+  /* Module accent colors */
+  --color-module-marketplace: #059669;
+  --color-module-exchange:    #d97706;
+  --color-module-events:      #7c3aed;
+  --color-module-lostfound:   #b45309;
+  --color-module-inspire:     #dc2626;
+  --color-module-chibi:       #7c3aed;
+
+  /* Elevation shadows */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.06);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.10);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+  --shadow-xl:  0 16px 48px rgba(0,0,0,0.14);
+  --shadow-glow-primary: 0 0 24px rgba(31,58,138,0.22);
+  --shadow-glow-accent:  0 0 24px rgba(245,179,0,0.28);
+
+  /* Border radius scale */
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* Motion easing */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:    cubic-bezier(0, 0, 0.2, 1);
 }
 
 .dark {
-  /* Deeper night sky — campus after dark */
-  --color-bg: #0a0d14;
-  --color-surface: #131720;
-  --color-surface-muted: #1a1f2e;
-  --color-border: #252b3a;
-  --color-foreground: #e6e8ee;
-  --color-muted-foreground: #99a1b3;
+  /* Night sky — lifted to improve readability */
+  --color-bg: #12151f;
+  --color-surface: #1c2130;
+  --color-surface-muted: #242a3a;
+  --color-border: #313848;
+  --color-foreground: #eaecf2;
+  --color-muted-foreground: #a8b0c2;
 
-  --color-primary: #4a6ee8;
-  --color-primary-hover: #5a7ef0;
+  --color-primary: #6080f0;
+  --color-primary-hover: #7090f8;
   --color-primary-foreground: #ffffff;
   --color-accent: #f5b300;
-  --color-accent-foreground: #0a0d14;
+  --color-accent-foreground: #12151f;
 
   --color-danger: #f04438;
   --color-danger-foreground: #ffffff;
@@ -74,7 +103,12 @@
   --animate-twinkle-1: twinkle-1 4s ease-in-out infinite alternate;
   --animate-twinkle-2: twinkle-2 6s ease-in-out infinite alternate;
   --animate-twinkle-3: twinkle-3 8s ease-in-out infinite alternate;
-  --animate-idle-bob: idle-bob 3s ease-in-out infinite;
+  --animate-idle-bob:   idle-bob   3s ease-in-out infinite;
+  --animate-spring-in:  spring-in  0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  --animate-shake:      shake      0.4s ease both;
+  --animate-count-pop:  count-pop  0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+  --animate-slide-up:   slide-up   0.32s cubic-bezier(0,0,0.2,1) both;
+  --animate-dot-pulse:  dot-pulse  1.6s ease-in-out infinite;
 }
 
 html {
@@ -203,6 +237,89 @@ body {
   50%       { transform: translateY(-4px); }
 }
 
+/* ─── Spring scale-in (modals, toasts, dropdowns) ─── */
+@keyframes spring-in {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+
+/* ─── Slide up (bottom sheets, mobile drawers) ─── */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0);    }
+}
+
+/* ─── Slide in from right (side drawers) ─── */
+@keyframes slide-right {
+  from { transform: translateX(110%); }
+  to   { transform: translateX(0);    }
+}
+
+/* ─── Count pop (vote / XP number increment) ─── */
+@keyframes count-pop {
+  0%   { transform: scale(1);    }
+  45%  { transform: scale(1.38); }
+  100% { transform: scale(1);    }
+}
+
+/* ─── Shake (form validation error) ─── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  18%      { transform: translateX(-5px); }
+  36%      { transform: translateX(4px); }
+  54%      { transform: translateX(-3px); }
+  72%      { transform: translateX(2px); }
+}
+
+/* ─── Badge pulse dot ─── */
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%      { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* ─── Card hover glow breathe ─── */
+@keyframes glow-breathe {
+  0%, 100% { box-shadow: var(--glow-start, none); }
+  50%      { box-shadow: var(--glow-end, none);   }
+}
+
+/* ─── Gradient text utility ─── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #4a6ee8 40%, #a78bfa 70%, var(--color-accent) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 5s ease infinite;
+}
+
+/* ─── Nav underline active indicator ─── */
+.nav-item-active {
+  position: relative;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.nav-item-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ─── Glass surface ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.60);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.dark .glass {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 /* ─── Mesh gradient for hero sections ─── */
 .mesh-gradient {
   background:
@@ -250,11 +367,91 @@ body {
   100% { background-position:  300% center; }
 }
 
-/* ─── Sun ray rotate (theme toggle hover) ─── */
+/* ─── Sun ray rotate — continuous (theme toggle always-on) ─── */
 @keyframes sun-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(180deg); }
 }
+@keyframes sun-spin-continuous {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Moon float — continuous gentle bob ─── */
+@keyframes moon-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-4px); }
+}
+
+/* ─── Campus photo breathe ─── */
+@keyframes campus-breathe {
+  0%, 100% { transform: scale(1.0) translateZ(0); }
+  50%       { transform: scale(1.06) translateZ(0); }
+}
+
+/* ─── Landing particles — slow upward drift ─── */
+@keyframes particle-rise {
+  0%   { transform: translateY(0)      translateX(0);    opacity: 0;   }
+  12%  {                                                  opacity: 0.65; }
+  88%  {                                                  opacity: 0.35; }
+  100% { transform: translateY(-130px) translateX(18px); opacity: 0;   }
+}
+
+/* ─── Hero content reveal — staggered ─── */
+@keyframes hero-reveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ─── Chibi bulldog — pure CSS, no React state needed ─── */
+@keyframes chibi-bob {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-9px); }
+}
+@keyframes chibi-wave-auto {
+  /* Arm rests for ~70% of the cycle, then waves */
+  0%, 68%, 100% { transform: rotate(0deg);   transform-origin: 10px 10px; }
+  72%            { transform: rotate(-42deg); transform-origin: 10px 10px; }
+  76%            { transform: rotate(10deg);  transform-origin: 10px 10px; }
+  80%            { transform: rotate(-36deg); transform-origin: 10px 10px; }
+  84%            { transform: rotate(6deg);   transform-origin: 10px 10px; }
+  88%            { transform: rotate(-22deg); transform-origin: 10px 10px; }
+  94%            { transform: rotate(2deg);   transform-origin: 10px 10px; }
+}
+@keyframes chibi-wave-fast {
+  0%, 100% { transform: rotate(0deg);   transform-origin: 10px 10px; }
+  25%       { transform: rotate(-40deg); transform-origin: 10px 10px; }
+  75%       { transform: rotate(8deg);   transform-origin: 10px 10px; }
+}
+@keyframes chibi-blink {
+  0%, 88%, 100% { transform: scaleY(1);    }
+  92%            { transform: scaleY(0.08); }
+}
+@keyframes chibi-tail-wag {
+  0%, 100% { transform: rotate(-18deg); transform-origin: 0% 100%; }
+  50%       { transform: rotate(22deg);  transform-origin: 0% 100%; }
+}
+@keyframes chibi-tail-fast {
+  0%, 100% { transform: rotate(-25deg); transform-origin: 0% 100%; }
+  50%       { transform: rotate(30deg);  transform-origin: 0% 100%; }
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: scale(0.8) translateY(6px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0);   }
+}
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(245,179,0,0.3); }
+  50%       { box-shadow: 0 0 24px rgba(245,179,0,0.6), 0 0 48px rgba(245,179,0,0.2); }
+}
+/* CSS class-based chibi control */
+.chibi-root                       { animation: chibi-bob 2.4s ease-in-out infinite; }
+.chibi-root:hover                  { animation: chibi-bob 0.9s ease-in-out infinite; }
+.chibi-arm                         { animation: chibi-wave-auto 8s ease-in-out infinite; }
+.chibi-root:hover .chibi-arm       { animation: chibi-wave-fast 0.55s ease-in-out infinite; }
+.chibi-tail                        { animation: chibi-tail-wag 1.3s ease-in-out infinite; }
+.chibi-root:hover .chibi-tail      { animation: chibi-tail-fast 0.38s ease-in-out infinite; }
+.chibi-eye                         { animation: chibi-blink 4.5s ease-in-out infinite; }
+.chibi-eye-r                       { animation: chibi-blink 4.5s ease-in-out infinite 0.15s; }
 
 /* ─── Sun burst (theme toggle click) ─── */
 @keyframes sun-burst {
@@ -281,13 +478,9 @@ body {
   66%       { transform: translateY(5px)   rotate(2deg);  }
 }
 
-/* ─── Theme toggle: sun icon ─── */
-button:hover .sun-rays {
-  animation: sun-spin 0.65s ease-out forwards;
-  transform-origin: 12px 12px;
-}
+/* ─── Theme toggle: extra boost on hover ─── */
 button:hover .theme-toggle-moon {
-  animation: moon-pulse 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(200,220,255,0.7));
 }
 
 /* ─── Landing hero background layers ─── */
@@ -376,16 +569,13 @@ button:hover .theme-toggle-moon {
   to   { transform: rotate(-360deg); }
 }
 
-/* ─── Auth layout — branding panel background ─── */
+/* ─── No scrollbar (horizontal category chips) ─── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Auth layout — branding panel fallback (when campus photo not yet loaded) ─── */
 .auth-panel-bg {
-  background: linear-gradient(160deg, #dbeafe 0%, #eff6ff 22%, #fef9e7 58%, #e0f2fe 100%);
-}
-.dark .auth-panel-bg {
-  background:
-    radial-gradient(ellipse at 28% 18%, rgba(74,110,232,0.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 72% 78%, rgba(147,51,234,0.09) 0%, transparent 50%),
-    radial-gradient(ellipse at 84% 10%, rgba(245,179,0,0.07) 0%, transparent 42%),
-    #0a0d14;
+  background: linear-gradient(160deg, #0f2060 0%, #1f3a8a 40%, #0a1442 100%);
 }
 
 /* ─── Auth CTA button — shimmer sweep on hover ─── */
@@ -407,3 +597,62 @@ button:hover .theme-toggle-moon {
   background-position: 200% center;
   transition: background-position 0.55s ease;
 }
+
+/* ─── Page background mesh pattern (light mode subtle grid) ─── */
+@keyframes mesh-drift {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  33%       { transform: translateX(6px) translateY(-4px); }
+  66%       { transform: translateX(-4px) translateY(6px); }
+}
+
+/* ─── Gradient sweep for module headings ─── */
+@keyframes sweep-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+/* ─── Breathing glow for featured cards ─── */
+@keyframes card-glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%       { box-shadow: 0 0 24px 4px var(--card-glow, rgba(74,110,232,0.12)); }
+}
+
+/* ─── Subtle background noise texture for premium feel ─── */
+.bg-noise {
+  position: relative;
+}
+.bg-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Shimmer line (decorative separator) ─── */
+@keyframes shimmer-line {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer-line {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-line::after {
+  content: '';
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer-line 3s ease-in-out infinite;
+}
+
+/* ─── Loading dot pulse ─── */
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.75); }
+  50%       { opacity: 1;    transform: scale(1.1);  }
+}
+

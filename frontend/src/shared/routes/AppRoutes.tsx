@@ -46,8 +46,14 @@ const ProductDetailPage = lazy(() =>
 const MyReservationsPage = lazy(() =>
   import('@/modules/bulldog-exchange/pages/MyReservationsPage').then((m) => ({ default: m.MyReservationsPage })),
 )
+const ReservationInvoicePage = lazy(() =>
+  import('@/modules/bulldog-exchange/pages/ReservationInvoicePage').then((m) => ({ default: m.ReservationInvoicePage })),
+)
 const CreateProductPage = lazy(() =>
   import('@/modules/bulldog-exchange/pages/CreateProductPage').then((m) => ({ default: m.CreateProductPage })),
+)
+const EditProductPage = lazy(() =>
+  import('@/modules/bulldog-exchange/pages/EditProductPage').then((m) => ({ default: m.EditProductPage })),
 )
 
 // Notifications — lazy-loaded
@@ -58,6 +64,9 @@ const NotificationsPage = lazy(() =>
 // Lost & Found — lazy-loaded
 const LostFoundPage = lazy(() =>
   import('@/modules/lost-found/pages/LostFoundPage').then((m) => ({ default: m.LostFoundPage })),
+)
+const LostFoundDetailPage = lazy(() =>
+  import('@/modules/lost-found/pages/LostFoundDetailPage').then((m) => ({ default: m.LostFoundDetailPage })),
 )
 
 // Settings — lazy-loaded
@@ -90,6 +99,22 @@ const EditEventPage = lazy(() =>
 )
 const MyRsvpsPage = lazy(() =>
   import('@/modules/events/pages/MyRsvpsPage').then((m) => ({ default: m.MyRsvpsPage })),
+)
+
+// Messages — lazy-loaded
+const MessagesPage = lazy(() =>
+  import('@/modules/messages/pages/MessagesPage').then((m) => ({ default: m.MessagesPage })),
+)
+
+// Announcements — lazy-loaded
+const AnnouncementsPage = lazy(() =>
+  import('@/modules/announcements/pages/AnnouncementsPage').then((m) => ({ default: m.AnnouncementsPage })),
+)
+const AnnouncementDetailPage = lazy(() =>
+  import('@/modules/announcements/pages/AnnouncementDetailPage').then((m) => ({ default: m.AnnouncementDetailPage })),
+)
+const EditAnnouncementPage = lazy(() =>
+  import('@/modules/announcements/pages/EditAnnouncementPage').then((m) => ({ default: m.EditAnnouncementPage })),
 )
 
 // Static info pages — lazy-loaded
@@ -161,8 +186,16 @@ export function AppRoutes() {
             element={<Suspense fallback={<Loader label="Loading…" />}><CreateProductPage /></Suspense>}
           />
           <Route
+            path={paths.exchangeProductEdit}
+            element={<Suspense fallback={<Loader label="Loading…" />}><EditProductPage /></Suspense>}
+          />
+          <Route
             path={paths.myReservations}
             element={<Suspense fallback={<Loader label="Loading…" />}><MyReservationsPage /></Suspense>}
+          />
+          <Route
+            path={paths.reservationInvoice}
+            element={<Suspense fallback={<Loader label="Loading…" />}><ReservationInvoicePage /></Suspense>}
           />
           <Route
             path={paths.exchangeProduct}
@@ -179,6 +212,10 @@ export function AppRoutes() {
           <Route
             path={paths.lostFound}
             element={<Suspense fallback={<Loader label="Loading…" />}><LostFoundPage /></Suspense>}
+          />
+          <Route
+            path={paths.lostFoundDetail}
+            element={<Suspense fallback={<Loader label="Loading…" />}><LostFoundDetailPage /></Suspense>}
           />
 
           {/* Settings */}
@@ -219,6 +256,26 @@ export function AppRoutes() {
           <Route
             path={paths.eventDetail}
             element={<Suspense fallback={<Loader label="Loading…" />}><EventDetailPage /></Suspense>}
+          />
+
+          {/* Messages */}
+          <Route
+            path={paths.messages}
+            element={<Suspense fallback={<Loader label="Loading…" />}><MessagesPage /></Suspense>}
+          />
+
+          {/* Announcements */}
+          <Route
+            path={paths.announcements}
+            element={<Suspense fallback={<Loader label="Loading…" />}><AnnouncementsPage /></Suspense>}
+          />
+          <Route
+            path={paths.announcementEdit}
+            element={<Suspense fallback={<Loader label="Loading…" />}><EditAnnouncementPage /></Suspense>}
+          />
+          <Route
+            path={paths.announcementDetail}
+            element={<Suspense fallback={<Loader label="Loading…" />}><AnnouncementDetailPage /></Suspense>}
           />
 
           {/* Static info pages */}

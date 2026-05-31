@@ -2,6 +2,678 @@
 
 ---
 
+## [0.40.0] — 2026-05-31
+
+### Polish Sprint — Dashboard Night Mode, Exchange Variants, Loading Screen, Terms Fix, Report Dropdown, Nav Spacing
+
+**Summary**
+Seven targeted fixes and one new feature: (1) Dashboard hero background was using dark navy colors in light mode during "night" period (after 8pm), making text unreadable — fixed to use a light indigo gradient; (2) Bulldog Exchange admin now has full variant edit and delete capability; (3) All product variants expanded from size-range groups to individual sizes (XS through 6XL) via V25 migration and DevDataSeeder update; (4) SHS Traditional Uniform products moved to `MerchandiseCategory.SHS` for proper filtering; College Traditional Uniform products added; (5) Invoice print/PDF fixed with proper `html, body` visibility approach; (6) Report modal category dropdown fixed for dark mode; (7) Navigation bar items got more breathing room to prevent "Lost & Found" and "Chibi" from appearing compressed; (8) Terms & Conditions modal no longer auto-pops on every login — accessible from Settings only; (9) New animated login loading screen shows after successful login for ~3.5 seconds with smiling Bulldog chibi before navigating to the dashboard.
+
+**Changes by area**
+
+*Dashboard — light-mode night period background:*
+- `PERIOD_LIGHT.night.bg` changed from dark navy (`#0f172a`) to light indigo (`#eef2ff → #e8eeff → #f0f4ff`)
+- `PERIOD_LIGHT.night.accent` changed from `#60a5fa` to `#1f3a8a`
+
+*Bulldog Exchange — admin variant management:*
+- `bulldogExchangeApi.ts`: added `updateVariant` (`PUT /variants/:id`) and `deleteVariant` (`DELETE /variants/:id`)
+- `useBulldogExchange.ts`: added `useUpdateVariant` and `useDeleteVariant` hooks
+- `ProductDetailPage.tsx`: admin variant panel shows ✏️ Edit + 🗑 Delete per variant; edit opens pre-filled modal; delete confirms then removes
+
+*Bulldog Exchange — individual size variants:*
+- `V25__expand_size_variants.sql`: expands `XS–3XL`, `4XL–6XL`, `XS–4XL`, `XS–6XL` grouped variants into individual sizes; updates SHS products to `SHS` category; adds College Traditional Uniform products
+- `DevDataSeeder.java`: `seedVariantSizes()` helper added; all uniforms now seed individual sizes; SHS products use `MerchandiseCategory.SHS`; College Traditional Uniform products added
+
+*Bulldog Exchange — invoice print fix:*
+- `ReservationInvoicePage.tsx` print CSS: `html, body { visibility: hidden }` replaces broken `body * { visibility: hidden !important }`; `#invoice-printable` uses `position: absolute; inset: 0; max-width: 100%`; `print-hide` CSS class replaces `print:hidden`
+
+*Report modal — dark mode:*
+- `ReportModal.tsx`: `<select>` styled with `appearance-none` + custom chevron SVG; `[&>option]` Tailwind selectors ensure dark mode option colors
+
+*Navigation:*
+- `AppLayout.tsx`: nav container gets `shrink-0 gap-1 lg:gap-2 xl:gap-4`; `NavItem`: `px-2.5 py-1 rounded-lg` with `hover:bg-surface-muted/60`
+
+*Terms & Conditions:*
+- `App.tsx`: `useTermsCheck()` and `<TermsModal />` removed from global render tree
+- Terms remain accessible from Settings → Terms & Rules section
+
+*Login loading screen:*
+- `LoginLoadingScreen.tsx` (new): full-screen dark overlay, CSS star field, centered 160px animated bulldog chibi, "Welcome back, Bulldog! 🐾" speech bubble, random greeting, `dot-pulse` loading dots; fades in/out over ~3.5s
+- `index.css`: `@keyframes dot-pulse` added
+- `LoginPage.tsx`: shows loading screen on login success before navigating
+
+**New Migration**
+| Version | Description |
+|---------|-------------|
+| V25 | Expand grouped size variants to individual sizes; SHS category update; College Traditional Uniform products |
+
+---
+
+## [0.39.0] — 2026-05-31
+
+### Polish Sprint — Nav Readability, Dashboard Contrast, Exchange Admin Edit, Chibi Animations, Profile Cleanup, Quick Access Layout
+
+**Summary**
+Six targeted fixes following demo review: landing page nav text camouflages on white background when scrolled in light mode; dashboard hero text lacked contrast on pastel gradients; Outlook/Teams placement separated from NUIS Portal; admin lacked full product edit capability; profile still showed a now-removed marketplace activity toggle; and the chibi page had no animations. This sprint resolves all of these and runs a general inconsistency pass.
+
+**Changes by area**
+
+*Landing page — nav text readability on scroll:*
+- "NUverse Laguna" wordmark and "Sign In" link were always `color: white`, making them invisible against the `rgba(255,255,255,0.94)` scrolled nav background in light mode
+- Both now use `color: #1f3a8a` (NU primary blue) when `navScrolled && !isDark`, and white otherwise — smooth `transition-colors` included
+- `textShadow` on Sign In removed in scrolled light mode (shadow was unnecessary against solid background)
+
+*Dashboard hero — text contrast in light mode:*
+- Eyebrow date text: was using `style.heroAccent` (e.g., `text-sky-600` on `from-sky-50` bg) — tiny 10px text with poor contrast. Now locked to `text-primary` (#1f3a8a) in light mode
+- Name accent span: same issue, now `text-primary` in light mode (dark primary on light gradient is always readable)
+- Sub-text: `text-muted-foreground` → `text-foreground/75 font-medium` in light mode for stronger contrast
+
+*Dashboard — Quick Access grid layout:*
+- NUIS Portal moved out of the `MODULES` array into a separate `NUIS_LINK` object
+- New 3-column bottom row: [NUIS Portal] [Outlook] [MS Teams] — all rendered as `Ms365Card` components in a unified `grid-cols-3` row
+- `Ms365Card` now supports both internal paths (using React Router `<Link>`) and external URLs (using `<a target="_blank">`) — detected by whether `href` starts with `http`
+
+*Bulldog Exchange — admin full product edit:*
+- `EditProductPage.tsx` created at `/exchange/:productId/edit` — pre-fills all fields (name, description, category, image) from existing product data via `useProduct` query
+- `ProductImageUploader` included so admin can replace or upload product images
+- Route `paths.exchangeProductEdit` + `editExchangeProductPath()` helper added to `paths.ts`
+- Route registered in `AppRoutes.tsx` (lazy-loaded)
+- `ProductDetailPage.tsx` now shows "✏️ Edit Product" button in admin actions linking to the edit page
+
+*Profile — remove marketplace activity toggle:*
+- `PrivacyToggles` component now returns `null` (both marketplace activity and chibi showcase toggles removed)
+- `MyProfilePage`: `PrivacyToggles` import removed; `useUpdatePrivacy` hook call removed; privacy panel now only renders the `VisibilityToggle` (public/private profile switch)
+- `useUpdatePrivacy` removed from the page's hook usage (the hook itself remains in case other code uses it)
+
+*Chibi page — smooth animations without dislocation:*
+- Whole SVG gets `animation: chibi-bob 2.8s ease-in-out infinite` (gentle vertical float as a single unit — no parts move independently, so nothing appears dislocated)
+- Eyes: pupils wrapped in `<g>` elements with `transformOrigin` anchored to their center and `chibi-blink` animation — blinking both pupils together correctly; shine dots included in the same group
+- Left arm: wrapped in `<g>` with `transformOrigin: '33.5px 72px'` (shoulder joint) and `chibi-wave-auto` animation — arm waves from the shoulder in SVG coordinate space
+
+*General consistency pass:*
+- `MyProfilePage`: removed unused `updatePrivacy` state and `PrivacyToggles` import; privacy section simplified
+- `Dashboard`: `NUIS_LINK` extracted as constant; `Ms365Card` prop type made explicit so TypeScript accepts both NUIS and MS365 objects
+
+---
+
+## [0.38.0] — 2026-05-31
+
+### Mega Sprint — Messaging, Suspension, Reactions, Events V2, Reports, Chibi Fix, Profile V2, and Platform-Wide Polish
+
+**Summary**
+Comprehensive cross-module sprint covering 11 feature areas: (1) Direct Messaging system (1:1 conversations, real-time-like polling, nav bell with unread count, marketplace integration); (2) Timed Suspension system with admin UI, auto-unsuspend scheduler, suspension screen shown to affected users; (3) Terms & Conditions modal for students on every login with Settings read view; (4) Private Profile follow approval (PENDING→ACCEPTED flow, pending requests panel); (5) Profile improvements — admin/faculty role display, message button, school label fixes, remove Chibi showcase toggle; (6) Reactions "who reacted" modal on all pages with emoji breakdown; (7) Admin permanent comment/post delete across L&F, Events, Announcements; (8) Campus Events V2 — ARCHIVED status, auto-archive scheduler, reactions, comments, RSVP attendee list; (9) Report System — users submit reports from Settings, admin reviews/closes from Admin Reports tab; (10) Bulldog Exchange — SHS category, invoice print fix; (11) Chibi page and companion fixes (tail removed, stable layout).
+
+**Changes by area**
+
+*Sprint 1 — Critical Fixes:*
+- Landing page: fixed duplicate "NUverse Laguna" text by passing `showWordmark={false}` to `NUverseMark` in the nav
+- Announcement edit: created `EditAnnouncementPage.tsx`, added `announcementEdit` route, added `editAnnouncementPath()` helper, fixed edit links in detail and browse pages
+- Philippine timezone: JVM default set to `Asia/Manila` in `NUverseLagunaApplication.main()`, `spring.jackson.time-zone: Asia/Manila` added to `application.yml`, all announcement date formatters updated with `timeZone: 'Asia/Manila'`
+- Homepage: MS365 "Microsoft 365" section removed; Outlook and Teams cards moved into the Quick Access section as a sub-row
+
+*Sprint 2 — Suspension System + Terms & Conditions:*
+- V20 migration: `suspended_until`, `suspend_count`, `suspension_reason` columns added to `users`
+- `User.suspend(until, reason)` updated — increments count, stores date/reason; `User.reactivate()` clears suspension fields
+- `User.isSuspensionExpired()` domain method added
+- `SuspendUserRequest` DTO added; `AdminController.suspend()` accepts optional body with `suspendedUntil` and `reason`
+- `SuspensionExpiryScheduler` runs every 5 min to auto-unsuspend expired suspensions
+- `SuspendedException` + `SuspensionResponse` DTO; `GlobalExceptionHandler` returns HTTP 403 with structured `ACCOUNT_SUSPENDED` message
+- `AuthServiceImpl.login()` auto-reactivates expired suspensions; throws `SuspendedException` for active suspensions
+- `UserResponse` record extended with `suspendedUntil`, `suspendCount`, `suspensionReason`
+- Frontend: `suspensionStore` (Zustand), `apiClient` intercepts `ACCOUNT_SUSPENDED` 403 and sets store
+- `SuspensionScreen.tsx` full-screen overlay — shows duration, reason, offense count, T&C text; "I Understand & Accept" logs out
+- `AdminPage.tsx` — suspend button opens modal with `suspendedUntil` datetime + reason inputs; quick stats shows "Suspended" count; suspend count badge per user row
+- `TermsModal.tsx` — full T&C modal for student users on every login (reads all 8 sections, scroll-to-end required, checkbox confirm); `useTermsCheck()` hook auto-opens on user change
+- Settings page: Terms & Rules section added with individual article cards and interactive T&C modal link
+
+*Sprint 3 — Profile V2:*
+- V21 migration: `status VARCHAR(20) DEFAULT 'ACCEPTED'` added to `follows` with status index
+- `FollowStatus` enum (`PENDING` / `ACCEPTED`) added; `Follow.create()` accepts `targetIsPrivate`
+- `ProfileServiceImpl.follow()` creates PENDING follow for private profiles; `approveFollow()` / `rejectFollow()` / `getPendingFollowers()` methods added
+- `ProfileController` gains `GET /profile/me/pending-followers`, `POST /profile/:followerId/approve-follow`, `DELETE /profile/:followerId/reject-follow`
+- `PublicProfileResponse` extended with `isFollowPending` and `role`
+- Frontend: `FollowButton` shows "Pending…" state; `PublicProfilePage` shows pending banner + private-profile locked state + Message button (opens conversation)
+- `MyProfilePage` shows `PendingFollowersPanel` with approve/reject per pending request
+- `ProfileHeader` now renders admin/faculty as "Platform Administrator · NU Laguna" / "Faculty Member · NU Laguna" instead of school code; school labels corrected (SCS, SAS, SEA, SABM, SHS)
+- `PrivacyToggles`: "Hide Bulldog Chibi showcase" row removed
+
+*Sprint 4 — Direct Messaging:*
+- V22 migration: `conversations` and `messages` tables
+- `Conversation`, `Message` entities; `ConversationRepository`, `MessageRepository`; `MessagingService` / `MessagingServiceImpl` / `MessagingController`
+- Frontend: `messagesApi.ts`, `MessagesPage.tsx` (sidebar + real-time-polling chat area), `paths.messages` route
+- `MessageBell` component in `AppLayout` header with unread count badge (polling every 30s)
+- `PublicProfilePage` Message button → `getOrCreate` conversation → navigate to messages with pre-selected conversation
+- Marketplace "Message Seller" button now opens real conversation instead of notification
+
+*Sprint 5 — Reactions Modal + Admin Delete Comments:*
+- `LostFoundService` / `AnnouncementService` extended with `getReactions()`, `adminDeleteComment()`, `adminDelete()` (L&F only)
+- `LostFoundController` adds `GET /{id}/reactions`, `DELETE /comments/{commentId}/admin`, `DELETE /{id}/admin`
+- `AnnouncementController` adds `GET /{id}/reactions`
+- Shared `ReactionSummary` DTO; `ReactionsModal.tsx` reusable component shows emoji breakdown + user list
+- `LostFoundDetailPage`, `AnnouncementDetailPage`, `AnnouncementsPage` wired with ReactionsModal
+- Admin delete comment buttons added to L&F comments section
+
+*Sprint 6 — Campus Events V2:*
+- V23 migration: `event_reactions` and `event_comments` tables
+- `EventStatus.ARCHIVED` added; `CampusEvent.archive()` method
+- `EventReaction`, `EventComment` entities; `EventReactionRepository`, `EventCommentRepository`
+- `EventServiceImpl` extended with `getAttendees()`, `toggleReaction()`, `getReactions()`, `getComments()`, `addComment()`, `deleteComment()`, `adminDeleteComment()`
+- `EventController` gains reaction, comment, attendee, and admin-delete endpoints
+- `EventArchiveScheduler` runs every 30 min to auto-archive finished PUBLISHED events
+- `EventResponse` extended with `reactionCount`, `userReaction`, `commentCount`
+- Frontend: `EventStatus` type updated with `ARCHIVED`; `EventStatusBadge` handles ARCHIVED
+- `EventDetailPage` gains reactions picker, ReactionsModal, attendees toggle, comments section with admin delete
+- `eventsApi.ts` extended with all new endpoints
+
+*Sprint 7 — Announcements Polish:*
+- Delete confirmation: replaced `window.confirm` with proper custom modal in both `AnnouncementsPage.tsx` and `AnnouncementDetailPage.tsx`
+
+*Sprint 8 — Bulldog Exchange:*
+- `MerchandiseCategory.SHS` added to backend enum and Flyway migration applied inline
+- Frontend: `MerchandiseCategory` type includes `'SHS'`; `MERCHANDISE_CATEGORIES` and `CATEGORY_LABELS` updated; SHS icon added to category filter
+- Invoice print fix: replaced `body > * { display: none }` CSS (which hid the React root) with `body * { visibility: hidden }` + `#invoice-printable { visibility: visible }` approach
+
+*Sprint 9 — Report System:*
+- V24 migration: `reports` table
+- `Report` entity, `ReportRepository`, `CreateReportRequest` / `ReportResponse` DTOs
+- `ReportController`: `POST /api/reports` (any user), `GET /api/reports` (admin), `PATCH /api/reports/{id}/close` (admin)
+- Frontend: `reportsApi.ts`, `ReportModal.tsx` shared component with category/subject/description form
+- Settings `AccountSection` gains "Report an Issue" button opening the modal
+- `AdminPage` gains "Reports" tab (`ReportsTab` component) showing all reports with open/closed status, reporter name, close action
+
+*Sprint 10 — Chibi Fixes:*
+- `BulldogCompanion.tsx`: tail SVG path removed from the companion face
+- `ChibiPage.tsx`: removed `chibi-root` class from main SVG (stops up/down bounce); fixed arm/leg coordinates; removed tail; stabilized layout
+
+**New Migrations**
+| Version | Description |
+|---------|-------------|
+| V20 | Add suspension fields to users (suspended_until, suspend_count, suspension_reason) |
+| V21 | Add status column to follows table for pending approval flow |
+| V22 | Create conversations and messages tables for direct messaging |
+| V23 | Create event_reactions and event_comments tables |
+| V24 | Create reports table |
+
+**New Endpoints (selected)**
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/messages/conversations` | JWT | List user's conversations |
+| POST | `/api/messages/conversations/with/:userId` | JWT | Get or create 1:1 conversation |
+| GET | `/api/messages/conversations/:id/messages` | JWT | Paginated messages |
+| POST | `/api/messages/conversations/:id/messages` | JWT | Send message |
+| GET | `/api/messages/unread-count` | JWT | Unread count |
+| GET | `/api/reports` | ADMIN | List all reports |
+| POST | `/api/reports` | JWT | Submit report |
+| PATCH | `/api/reports/:id/close` | ADMIN | Close report |
+| GET | `/api/profile/me/pending-followers` | JWT | Pending follow requests |
+| POST | `/api/profile/:followerId/approve-follow` | JWT | Approve follow request |
+| DELETE | `/api/profile/:followerId/reject-follow` | JWT | Reject follow request |
+| GET | `/api/events/:id/reactions` | JWT | Event reactions list |
+| POST | `/api/events/:id/react` | JWT | Toggle event reaction |
+| GET | `/api/events/:id/comments` | JWT | Event comments |
+| POST | `/api/events/:id/comments` | JWT | Add event comment |
+| GET | `/api/events/:id/attendees` | JWT | View RSVP attendees |
+| GET | `/api/lost-found/:id/reactions` | JWT | L&F reactions list |
+| DELETE | `/api/lost-found/:id/admin` | ADMIN | Admin delete L&F post |
+| DELETE | `/api/lost-found/comments/:id/admin` | ADMIN | Admin delete any L&F comment |
+| GET | `/api/announcements/:id/reactions` | JWT | Announcement reactions list |
+
+**New Pages / Routes**
+- `/messages` — `MessagesPage` (direct messaging with sidebar + chat)
+- `/announcements/:announcementId/edit` — `EditAnnouncementPage` (admin/faculty)
+
+---
+
+## [0.37.0] — 2026-05-31
+
+### Major Feature & Design Sprint — Announcements V2, Lost & Found V2, Bulldog Exchange V2, Profile Overhaul, Chibi Fix, INSPIRE Redesign, Landing Refresh
+
+**Summary**
+Comprehensive sprint across every module and the UI layer: Announcements gains full admin lifecycle (create-with-photo, edit, delete, archive/restore, reactions); Lost & Found gains detail page, edit, search, comments, and reactions; Bulldog Exchange gets SHS product labeling, fixed gender filter, reservation confirmation flow, ₱50 fee, Sunday pause on countdown, limited product flag, and improved invoice with anti-forgery code; Profile shows email and replaces course/year with school code and enrollment year; Chibi companion rebuilt with 40 goofy messages cycling every 60s (20s auto-dismiss); INSPIRE page fully restructured into clearly separated sections; Landing page refreshed with updated copy, bigger logo, new "What's Inside" background graphics; Quick Access redesigned with MS365 cards on home; Settings link changed from icon to text.
+
+**Changes by area**
+
+*Announcements — full admin lifecycle (backend + frontend):*
+- V18 migration: `image_url` column on `emergency_announcements`; `announcement_reactions` table (unique per user per item, emoji field)
+- `AnnouncementReaction` entity added with `create()` factory
+- `AnnouncementReactionRepository` added
+- `EmergencyAnnouncement.imageUrl` field + new `create(…, imageUrl)` overload + `update(…, imageUrl)` overload + `activate()` domain method
+- `AnnouncementService` extended: `update`, `getById`, `activate`, `delete`, `toggleReaction`
+- `AnnouncementServiceImpl` rewired with `AnnouncementReactionRepository`; `toResponse` now includes `imageUrl`, `reactionCount`, `userReaction`
+- `AnnouncementController` adds: `GET /api/announcements/{id}`, `PUT /api/announcements/{id}`, `PATCH /api/announcements/{id}/activate`, `DELETE /api/announcements/{id}`, `POST /api/announcements/{id}/react`; `browse` passes `userId` for per-user reaction context
+- `AnnouncementResponse` record extended with `imageUrl`, `reactionCount`, `userReaction`
+- `CreateAnnouncementRequest` extended with `imageUrl`; `UpdateAnnouncementRequest` record added
+- Frontend: `Announcement` type extended; `announcementsApi` expanded with all new endpoints
+- `AnnouncementsPage.tsx` redesigned: clickable titles, inline emoji reaction picker (5 emojis), admin archive/restore/delete buttons, photo thumbnail strip
+- `AnnouncementDetailPage.tsx` added at `/announcements/:announcementId`: full post view, reaction picker, admin action bar (edit/archive/restore/delete), `AnnouncementDetailPath` route registered
+- `paths.announcementDetail` + `announcementDetailPath()` added to `paths.ts`
+
+*Lost & Found — edit, search, detail, comments, reactions (backend + frontend):*
+- V19 migration: `lost_found_comments` table; `lost_found_reactions` table (unique per user per item)
+- `LostFoundComment`, `LostFoundReaction` entities added
+- `LostFoundCommentRepository`, `LostFoundReactionRepository` added
+- `LostFoundRepository.searchByKeyword()` JPQL method added
+- `LostFoundItem.update()` domain method added
+- `LostFoundService` extended: `update`, `getById`, `toggleReaction`, `getComments`, `addComment`, `deleteComment`; `browse` signature adds `keyword` param
+- `LostFoundServiceImpl` rewired with both new repositories; `toResponse` includes `reactionCount`, `userReaction`, `commentCount`
+- `LostFoundController` adds: `GET /api/lost-found/{id}`, `PUT /api/lost-found/{id}`, `POST /api/lost-found/{id}/react`, `GET /api/lost-found/{id}/comments`, `POST /api/lost-found/{id}/comments`, `DELETE /api/lost-found/comments/{commentId}`; `browse` accepts `?keyword`
+- `LostFoundItemResponse` record extended with `reactionCount`, `userReaction`, `commentCount`
+- `AddCommentRequest`, `UpdateLostFoundRequest`, `LostFoundCommentResponse` DTOs added
+- Frontend: `LostFoundItem` type extended; `LostFoundComment`, `CreateLostFoundPayload` types added; `lostFoundApi` expanded
+- `LostFoundPage.tsx`: search bar added, item title is now a `Link` to detail, reaction/comment count displayed, "View post →" link on each card
+- `LostFoundDetailPage.tsx` added at `/lost-found/:itemId`: full post view, image, details grid, emoji reactions (5 emojis), comments section with add/delete, owner edit/resolve/delete actions
+- `paths.lostFoundDetail` + `lostFoundDetailPath()` added; route registered in `AppRoutes.tsx`
+
+*Bulldog Exchange — SHS labels, gender filter fix, invoice, fee, Sunday pause, confirmation, limited flag:*
+- V16 migration: SQL UPDATE to fix product genders from UNISEX to MALE/FEMALE based on product name patterns
+- V17 migration: `limited BOOLEAN NOT NULL DEFAULT FALSE` on `merchandise_products`
+- `MerchandiseProduct` entity gains `limited` field + `setLimited()` method
+- `ProductCardResponse` and `ProductResponse` extended with `limited`
+- `ProductCardResponse` and `ProductResponse` mappers in service updated to include `limited`
+- `DevDataSeeder`: new `seedProduct(name, description, category, gender)` overload; all gendered uniforms now call it with correct `MerchandiseGender`; Traditional Uniform products renamed to `[SHS] Traditional Uniform …` with SHS descriptions; College uniforms get `[College]` prefix in descriptions
+- `ReservationCountdown.tsx`: pauses on Sundays (`.getDay() === 0`) — shows "Paused — Sunday" message; countdown only ticks on non-Sunday days
+- `ProductDetailPage.tsx` fully rewritten: SHS/College badge rendered from name prefix; product name and description strip the prefix for display; 50-peso reservation fee displayed in UI; confirmation modal before reserve (shows item details, unit price, ₱50 fee, total); quantity selector (max 2); "limited product" notice replaces reserve button for limited items
+- `ProductCard.tsx`: detects `[SHS]` and `[College]` name prefixes; shows colored level badge; "Display Only" overlay + "Limited" badge for limited products; hides "NU Official" ribbon when level tag shown
+- `BulldogExchangePage.tsx`: gender filter pill tabs wired correctly (the root cause was products all defaulted to UNISEX — now fixed via V16 migration + seeder gender overload)
+- `ReservationInvoicePage.tsx` fully rewritten: dedicated `<style>` tag for print isolation; chibi mascot looking straight forward; anti-forgery verification code (`NUE-{id_part}-{timestamp_part}`); breakdown showing unit price + ₱50 reservation fee + total; 48-hour pickup note with Sunday exclusion
+- `types.ts` extended: `ProductCard.limited`, `ProductDetail.limited`
+
+*Profile — email display, school label, enrollment year, Chibi showcase fix:*
+- Backend: `PublicProfileResponse` record extended with `hideChibiShowcase`; `ProfileServiceImpl.getPublicProfile()` maps `profile.isHideChibiShowcase()` into response
+- `UserProfile.update()` already had `hideChibiShowcase` — confirmed the field exists and propagates
+- Frontend `types.ts`: `PublicProfileResponse.hideChibiShowcase` added
+- `ProfileHeader.tsx`: `yearLevel` prop removed; `email` and `enrollmentYear` props added; `course` prop now treated as school code (SCS/SAS/SEA/SHS/SABM) and displayed with full school name; `email` displayed below the name with envelope icon
+- `MyProfilePage.tsx`: passes `user.email` from `useAuthStore` and derives `enrollmentYear` from `profile.createdAt`
+- `PublicProfilePage.tsx`: passes without `yearLevel`; `hideChibiShowcase` available for future chibi section toggle
+- `schemas.ts`: `SCHOOL_OPTIONS` const added (SCS, SAS, SEA, SHS, SABM); `editProfileSchema` course field max changed to 10 chars; `yearLevelOptions` retained for backward-compat
+- `ProfileForm.tsx`: "Course / Program" `Input` replaced with "School" `Select` using `SCHOOL_OPTIONS`
+
+*Chibi companion — goofy messages, 1-min cycle, 20s auto-dismiss, tail fix:*
+- `BulldogCompanion.tsx` rewritten: MESSAGES array expanded to 40 entries (goofy jokes, trivia, barks, helpful tips, funny observations); daily-quote logic removed; bubble now cycles every 60 seconds with 8s delay on first show; auto-dismiss after 20 seconds; manual dismiss on click; bubbleMsg state holds the current random message; dismissTimerRef prevents stale timers; BulldogFace SVG tail path redrawn to attach to the body's lower-right at `cx=40, cy=36` origin — no more floating tail
+
+*INSPIRE Sports Academy — complete redesign:*
+- `InspirePage.tsx` fully rewritten with clear visual hierarchy: each section (Student Sports Club, Facilities, Athletic Club Membership, Personal Training, Contact) now has a colored vertical accent line, section label, and its own visual personality
+- Facilities cards: sport emoji large background watermark, per-sport accent color, description, sport tags, hours — all clearly grouped within each card
+- Membership section: inclusions grid and pricing grid are visually separated from each other with clear labels
+- Contact section: each contact method has an icon tile; social links as pill buttons; hours in a highlighted callout box
+- Dark/light mode tested throughout
+
+*Quick Access & Navigation:*
+- `AppLayout.tsx`: Settings link changed from gear SVG icon to text "Settings"; Outlook/Teams links removed from header and mobile drawer
+- `DashboardPage.tsx`: `MS365_LINKS` const added (Outlook + MS Teams); `Ms365Card` component added (external link card); "Microsoft 365" section added below Module grid
+- `DashboardPage.tsx`: `MS365_LINKS` array uses brand-accurate colors (Outlook: #0078d4, Teams: #6264a7)
+
+*Landing Page — content refresh and section enhancements:*
+- Module descriptions updated with richer, more evocative copy for all 6 modules
+- "LIVE PLATFORM" badge removed; replaced with "For Bulldogs, by Bulldogs" pill
+- Hero tagline updated: "Your campus. Your community. Your universe."
+- "What's Inside" section: floating hexagon grid pattern, radial glow accents, and two animated orbs added as background graphics
+- Footer: radial glow accents + dot grid overlay added as background graphics
+- Nav logo now shows "NUverse Laguna" wordmark next to the mark on desktop
+
+*Auth pages — enhanced backgrounds:*
+- `AuthLayout.tsx`: light mode right panel background upgraded to match dark mode richness — radial ellipse gradients at three positions (top-left blue, bottom-right amber, top-right violet)
+
+*Overall backgrounds:*
+- `AppLayout.tsx`: subtle fixed-position atmospheric glow added in light mode (blue at top-left, gold at bottom-right)
+- `index.css`: added `@keyframes mesh-drift`, `sweep-reveal`, `card-glow-pulse`, `shimmer-line` + `.shimmer-line` class; `.bg-noise` pseudo-element texture class
+
+**New Migrations**
+| Version | Description |
+|---------|-------------|
+| V16 | Fix product genders (UPDATE merchandise_products based on name pattern) |
+| V17 | Add `limited` boolean column to `merchandise_products` |
+| V18 | Add `image_url` to `emergency_announcements`; create `announcement_reactions` table |
+| V19 | Create `lost_found_comments` and `lost_found_reactions` tables |
+
+**New Endpoints**
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/announcements/{id}` | JWT | Get single announcement with reaction context |
+| PUT | `/api/announcements/{id}` | ADMIN/FACULTY | Edit announcement |
+| PATCH | `/api/announcements/{id}/activate` | ADMIN/FACULTY | Restore archived announcement |
+| DELETE | `/api/announcements/{id}` | ADMIN | Permanently delete announcement |
+| POST | `/api/announcements/{id}/react` | JWT | Toggle emoji reaction |
+| GET | `/api/lost-found/{id}` | JWT | Get single L&F post |
+| PUT | `/api/lost-found/{id}` | JWT (owner) | Edit L&F post |
+| POST | `/api/lost-found/{id}/react` | JWT | Toggle emoji reaction |
+| GET | `/api/lost-found/{id}/comments` | JWT | List comments |
+| POST | `/api/lost-found/{id}/comments` | JWT | Add comment |
+| DELETE | `/api/lost-found/comments/{id}` | JWT (author) | Delete comment |
+
+**New Pages / Routes**
+- `/announcements/:announcementId` — `AnnouncementDetailPage` (full post view, reactions, admin actions)
+- `/lost-found/:itemId` — `LostFoundDetailPage` (full post view, reactions, comments, edit)
+
+---
+
+## [0.36.0] — 2026-05-31
+
+### Feature Sprint — Gender Filtering, Message Seller, Announcements Browse, Reservation Invoice, Badge Component
+
+**Summary**
+Five self-contained features added across the stack: Bulldog Exchange gains gender targeting and keyword search on products; Marketplace gains a "Message Seller" in-app notification flow; a student-facing Announcements browse page is added; Bulldog Exchange reservations get a printable invoice view; and a multi-variant `Badge` component joins the shared UI system.
+
+**Changes by area**
+
+*Bulldog Exchange — Gender Targeting + Keyword Search:*
+- `MerchandiseGender` enum added: `MALE`, `FEMALE`, `UNISEX`
+- V15 migration: `gender VARCHAR(20) NOT NULL DEFAULT 'UNISEX'` column added to `merchandise_products`; index `idx_merchandise_products_gender` created
+- `MerchandiseProduct` entity gains `gender` field; `create()` and `update()` factory/domain methods extended to accept `gender`
+- `BulldogExchangeService.getProducts()` signature extended to `(keyword, category, gender, pageable)`
+- `BulldogExchangeServiceImpl.getProducts()` branches on all combinations: keyword search (with/without category), category+gender filter, category-only, gender-only, or unfiltered — each path uses its own repository method to avoid cross-param interference
+- `MerchandiseProductRepository` gains four new methods: `searchByName` (LIKE on name), `searchByNameAndCategory`, `findByCategoryAndGenderAndActiveTrue`, `findByGenderAndActiveTrue`
+- `CreateProductRequest` and `UpdateProductRequest` DTOs include `gender` field
+- `ProductCardResponse` includes `gender` field; `BulldogExchangeServiceImpl.toCardResponse()` maps `product.getGender()` (null-safe, defaults to `"UNISEX"`)
+- `BulldogExchangeController.getProducts()` accepts `?keyword` and `?gender` request params alongside existing `?category`
+- Frontend `types.ts` gains `MerchandiseGender = 'MALE' | 'FEMALE' | 'UNISEX'` and `ProductCard.gender`
+- Frontend `bulldogExchangeApi.getProducts()` passes keyword and gender params when non-null
+- `BulldogExchangePage.tsx` redesigned with SVG category icon map and gender filter pill tabs
+
+*Marketplace — Message Seller:*
+- `NotificationType.MARKETPLACE_MESSAGE` added to backend enum
+- `MessageSellerRequest` record DTO added (`@NotBlank message`)
+- `MarketplaceService.messageSeller(buyerId, listingId, message)` interface method added
+- `MarketplaceServiceImpl.messageSeller()` — validates buyer is not the seller (400), looks up buyer display name via `UserProfileReader`, creates a `MARKETPLACE_MESSAGE` notification for the seller via `NotificationService`; `NotificationService` injected as a new dependency
+- `POST /api/marketplace/{listingId}/message` endpoint added to `MarketplaceController`
+- `MarketplaceServiceImpl` now publishes `MarketplaceListingCreatedEvent` on create and `MarketplaceListingSoldEvent` on mark-as-sold (event publisher wired in alongside `NotificationService`)
+- Frontend `marketplaceApi.messageSeller(listingId, message)` added
+- `ListingDetailPage.tsx` gains a **Message Seller** button (shown when listing is `AVAILABLE`); clicking opens an inline modal with a `<textarea>` (max 500 chars, character counter), Cancel, and Send (disabled while empty; shows loading state); success toasts and clears modal
+
+*Announcements — Student Browse Page:*
+- `GET /api/announcements/browse` endpoint added to `AnnouncementController` (any authenticated user, paginated newest-first) — separate from the admin-only `GET /api/announcements`
+- `AnnouncementsPage.tsx` added at `/announcements`: priority-coded cards (`🚨 Critical` / `📣 Important` / `📌 General`) with left colour bar, archived badge for inactive/expired items, paginated via `Pagination` component
+- `announcementsApi.browse(page, size)` added
+- Route `/announcements` and `paths.announcements` constant added to `AppRoutes.tsx` and `paths.ts`
+
+*Bulldog Exchange — Reservation Invoice Page:*
+- `ReservationInvoicePage.tsx` added at `/exchange/reservations/:reservationId/invoice`: printable invoice card with product name, variant, price, status, issued/expires dates, customer name and email, seller policy note, and "Print / Save as PDF" button (`window.print()`); print controls hidden via `print:hidden`
+- `reservationInvoicePath(reservationId)` helper added to `paths.ts`; `paths.reservationInvoice` route pattern added
+- `ReservationCard.tsx` gains a **View Invoice** link button routing to the invoice page
+- Route lazy-loaded in `AppRoutes.tsx`
+
+*Shared UI — Badge Component:*
+- `Badge.tsx` added: configurable `variant` (solid / soft / outline), `size` (sm / md), `color` (12 values: primary, accent, success, danger, warning, blue, violet, emerald, amber, red, gray), optional `dot` leading coloured circle. Extends `HTMLSpanElement` attributes for full prop pass-through
+- Exported from `shared/components/ui/index.ts`
+
+**New Endpoints**
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/marketplace/{listingId}/message` | JWT | Send a message to a listing's seller (creates MARKETPLACE_MESSAGE in-app notification) |
+| GET | `/api/announcements/browse` | JWT | Paginated announcement browse for students (newest-first) |
+
+**New Migration**
+- V15: `gender` column on `merchandise_products` (NOT NULL DEFAULT 'UNISEX', indexed)
+
+**Affected Files**
+- `backend/.../bulldog_exchange/domain/MerchandiseGender.java` (new)
+- `backend/.../bulldog_exchange/domain/MerchandiseProduct.java`
+- `backend/.../bulldog_exchange/application/BulldogExchangeService.java`
+- `backend/.../bulldog_exchange/application/BulldogExchangeServiceImpl.java`
+- `backend/.../bulldog_exchange/controller/BulldogExchangeController.java`
+- `backend/.../bulldog_exchange/dto/CreateProductRequest.java`
+- `backend/.../bulldog_exchange/dto/UpdateProductRequest.java`
+- `backend/.../bulldog_exchange/dto/ProductCardResponse.java`
+- `backend/.../bulldog_exchange/repository/MerchandiseProductRepository.java`
+- `backend/.../marketplace/application/MarketplaceService.java`
+- `backend/.../marketplace/application/MarketplaceServiceImpl.java`
+- `backend/.../marketplace/controller/MarketplaceController.java`
+- `backend/.../marketplace/dto/MessageSellerRequest.java` (new)
+- `backend/.../announcements/controller/AnnouncementController.java`
+- `backend/.../notifications/domain/NotificationType.java`
+- `backend/.../db/migration/V15__merchandise_gender.sql` (new)
+- `frontend/.../bulldog-exchange/types.ts`
+- `frontend/.../bulldog-exchange/services/bulldogExchangeApi.ts`
+- `frontend/.../bulldog-exchange/pages/BulldogExchangePage.tsx`
+- `frontend/.../bulldog-exchange/pages/ReservationInvoicePage.tsx` (new)
+- `frontend/.../bulldog-exchange/components/ReservationCard.tsx`
+- `frontend/.../marketplace/services/marketplaceApi.ts`
+- `frontend/.../marketplace/pages/ListingDetailPage.tsx`
+- `frontend/.../announcements/services/announcementsApi.ts`
+- `frontend/.../announcements/pages/AnnouncementsPage.tsx` (new)
+- `frontend/.../shared/components/ui/Badge.tsx` (new)
+- `frontend/.../shared/components/ui/index.ts`
+- `frontend/.../shared/routes/AppRoutes.tsx`
+- `frontend/.../shared/routes/paths.ts`
+
+---
+
+## [0.35.0] — 2026-05-31
+
+### Backend — Remaining Gap Closure
+
+**Summary**
+Closed the last five backend gaps identified after v0.33.0: the only untriggered XP source (`DAILY_LOGIN`), two missing notification types, a Flyway clean-build failure, an `AdminController` code quality issue, and the missing frontend Reactivate button that left the `PATCH /reactivate` endpoint unreachable from the UI.
+
+**Changes by area**
+
+*XP System — `DAILY_LOGIN` (the last dead source):*
+- `DailyLoginEvent` record added to `shared/event/`
+- `AuthServiceImpl.login()` now publishes `DailyLoginEvent` after every successful login
+- `ChibiXpEventRepository` gains `existsByUserIdAndSourceAndCreatedAtAfter` for deduplication
+- `ChibiXpEventListener.onDailyLogin()` awards XP once per calendar day — subsequent logins on the same day are silently skipped
+- All 11 `XpSource` values are now triggered end-to-end
+
+*Notifications — two new types:*
+- `NotificationType.LISTING_SOLD` added; `NotificationEventListener` handles `MarketplaceListingSoldEvent` → notifies the seller when their listing is marked as sold
+- `NotificationType.LOST_FOUND_RESOLVED` added; `NotificationEventListener` handles `LostFoundItemResolvedEvent` → notifies the reporter when their item is resolved
+- `ReferenceType` extended with `LISTING` and `LOST_FOUND_ITEM`
+- Frontend `notifications/types.ts` updated to match both new types and reference types
+
+*Flyway — clean-build stability:*
+- `V10__suggestions.sql` and `V14__suggestion_votes_updated_at.sql` were previously deleted but remain in `flyway_schema_history` — a `mvn clean` build would fail Flyway validation
+- `spring.flyway.ignore-migration-patterns: "*:missing"` added to `application.yml`; Flyway now tolerates missing history entries without error
+
+*Admin — code quality and usability:*
+- `AdminController` FQN inline class references replaced with proper `import` statements
+- `ApiResponse.success()` in `getUsers` replaced with `ApiResponse.ok()` for consistency
+- `AdminPage.tsx` gains a **Reactivate** button: shown for `SUSPENDED` users (the Suspend button shows for all other non-admin users); backed by `PATCH /api/admin/users/{id}/reactivate`
+
+**219/219 backend tests pass. 0 failures.**
+
+---
+
+## [0.34.0] — 2026-05-31
+
+### Frontend — Complete UI/UX Transformation Pass
+
+**Summary**
+Full editorial redesign of every authenticated page in the application. Each major page now has its own distinct visual personality, atmosphere, and editorial identity — fashion-magazine meets premium digital product. All pages are theme-safe (light + dark), fully typed, and animation-enhanced.
+
+**Pages redesigned**
+
+- **Dashboard** — Editorial bento-grid layout. Time-aware hero (dawn/morning/afternoon/evening/night) with massive typography, 6-module bento grid with animated hover states, chibi XP mini-widget, editorial event and listing rows with date columns and color bars.
+- **Marketplace** — Premium e-commerce editorial header (green-tinted). Full inline filter system: horizontal scrollable category chips with SVG icons, condition pills, price range dropdown, live count badge. No more generic form panel.
+- **Events** — Dynamic hero with category-reactive accent colors. Category picker with animated color-shift. Compact "Upcoming only" toggle. Removed redundant filter form, replaced with elegant pill-based navigation.
+- **Bulldog Exchange** — Flagship store aesthetic with diagonal stripe texture, gold accents, premium reservation policy strip, gold category tabs. Admin "New Product" button styled in gold gradient.
+- **Lost & Found** — Community bulletin board aesthetic. Live LOST/FOUND/resolved stat badges in the header. Color-coded item cards (amber=lost, green=found) with icon type badges, inline resolve buttons. Type toggle in modal redesigned as proper pill-switcher.
+- **Chibi** — RPG character screen with atmospheric dark hero, orbital ring animations, tier-reactive glow effects, star particle field, labeled achievement cards with XP reward display.
+- **Profile** — Premium ProfileHeader with gradient ring around avatar, editorial name typography, taller cover band with mesh orbs + dot grid + NU watermark. Section panels with icon headers.
+- **Admin Panel** — Editorial control-center hero with red accents. Users tab shows quick stats (total/active/pending), redesigned table with role/status dot indicators. Announcements tab with priority picker as pill switcher.
+- **Settings** — Two-column layout with icon sidebar nav. Theme section shows light/dark preview cards with active checkmark. Account info with editorial label typography.
+- **Notifications** — Clean editorial header with unread count badge, skeleton loaders replacing spinner.
+
+**Global CSS additions**
+- `.no-scrollbar` utility for horizontal scroll containers
+
+---
+
+## [0.33.0] — 2026-05-31
+
+### Backend — Gap Closure: Full System Completeness Pass
+
+**Summary**
+Closed every functional gap in the backend across all 8 modules. The system is now fully wired end-to-end: all XP sources fire, all modules have tests, demo data is complete, and several correctness and performance issues are resolved.
+
+**Changes by area**
+
+*XP System — fixed 6 dead XP sources (was never triggered):*
+- `FIRST_LISTING` / `LISTING_SOLD` — `MarketplaceServiceImpl` now publishes `MarketplaceListingCreatedEvent` on listing creation and `MarketplaceListingSoldEvent` on mark-as-sold
+- `LOST_FOUND_POST` / `LOST_FOUND_RESOLVED` — `LostFoundServiceImpl` now publishes `LostFoundItemCreatedEvent` and `LostFoundItemResolvedEvent`
+- `UPLOAD_AVATAR` — `ProfileServiceImpl.updateAvatar()` now publishes `AvatarUploadedEvent`
+- `COMPLETE_PROFILE` — `ProfileServiceImpl.updateProfile()` publishes `ProfileCompletedEvent` when all 4 fields (bio, course, yearLevel, interests) are filled
+- `ChibiXpEventListener` wired with 6 new `@TransactionalEventListener` handlers for all the above
+
+*Admin — missing reactivate:*
+- `User.reactivate()` domain method added (throws 400 if already active)
+- `PATCH /api/admin/users/{id}/reactivate` endpoint added to `AdminController`
+- `GET /api/admin/users/{id}` endpoint added for single-user lookup
+
+*Lost & Found — feature gaps:*
+- `POST /api/lost-found/images` image upload endpoint added (consistent with Marketplace and Exchange)
+- `LostFoundServiceImpl` fully rewritten: adds event publishing, `StorageService` injection, and batch profile loading (eliminates N+1 via `findByUserIdIn`)
+
+*Performance — N+1 fixes:*
+- `MerchandiseProductRepository`: `@EntityGraph(attributePaths = "variants")` added to `findByActiveTrue` and `findByCategoryAndActiveTrue` — product card browsing now loads variants in a single query
+
+*API consistency:*
+- `AnnouncementController`, `LostFoundController`, `ChibiController` — replaced `ApiResponse.success()` calls with `ApiResponse.ok()` and descriptive messages
+
+*Demo data (DevDataSeeder):*
+- Added 2 seeded announcements: Enrollment Period (IMPORTANT, 14d) + Maintenance Notice (GENERAL, 4d)
+- Added 6 seeded lost & found items (3 LOST + 3 FOUND) attributed to demo students
+
+*New tests (46 added, total 219):*
+- `AnnouncementServiceImplTest` (7 tests) + `AnnouncementControllerTest` (8 tests)
+- `LostFoundServiceImplTest` (10 tests) + `LostFoundControllerTest` (9 tests)
+- `ChibiServiceImplTest` (8 tests) + `ChibiControllerTest` (4 tests)
+- `MarketplaceServiceImplTest` — updated constructor to include `ApplicationEventPublisher`
+
+**219/219 backend tests pass. 0 failures.**
+
+---
+
+## [0.32.0] — 2026-05-31
+
+### Bulldog Exchange — Real Product Catalog Seeded (Backend)
+
+**Summary**
+Replaced the five placeholder demo products in `DevDataSeeder` with the full 30-product official catalog provided by the NU Laguna store. Every product now reflects real SKUs, accurate pricing, correct size tiers, and proper categories.
+
+**Products added (30 total, 54 variants)**
+
+| Category | Products |
+|---|---|
+| BAGS | NU Drawstring Bag (Black, Blue — ₱299) |
+| CLOTHING | NU Pullover Jacket Hood Combi NU Gold (XS–XL × Blue/Yellow — ₱799) |
+| CLOTHING | Male & Female Psychology Uniform Top + Bottom (XS–3XL / 4XL–6XL price tiers) |
+| CLOTHING | NSTP Shirt & Jogging Pants (XS–4XL — ₱300 / ₱400) |
+| CLOTHING | ESS Male & Female Polo + Khaki Short (XS–6XL — ₱600 each) |
+| CLOTHING | PE Shirt & Jogging Pants (XS–4XL — ₱300 / ₱400) |
+| CLOTHING | Traditional Uniform — Male Polo + Pants, Female Blouse + Skirt (XS–3XL / 4XL–6XL tiers) |
+| CLOTHING | Tourism Uniform — Male Coat/Vest/Pants, Female Scarf/Blazer/Vest/Skirt (XS–3XL / 4XL–6XL tiers) |
+| ACCESSORIES | NU Bulldog Basketball Cap (₱249), NU Bulldog Plush Key Chain (₱249) |
+| OTHER | NU Bulldog Plushie Toy (₱399) |
+| EQUIPMENT | NU HydroFresh FlipStraw Tumbler (₱399), HydroFresh Insulated Food Jar (₱499) |
+
+**Variant design rationale**
+- Uniform items with two price tiers (e.g., XS–3XL at ₱700 vs 4XL–6XL at ₱950) are modelled as two variants per product — matching real store pricing without over-engineering the schema.
+- Apparel with a single price across all sizes (NSTP, PE, ESS) uses one variant with a size-range label.
+- The Pullover Jacket uses 10 variants (5 sizes × 2 colors) to enable per-size stock management.
+
+**No schema changes** — V5 migration covers all columns used. **173 backend tests: all pass.**
+
+---
+
+## [0.31.0] — 2026-05-31
+
+### Front Pages — World-Class Visual Redesign (Landing, Login, Register)
+
+**Business Purpose**
+The three public-facing pages — landing, login, and register — are the first and last thing any evaluator, student, or faculty member sees. The previous versions were functional but template-grade: generic gradient heroes, standard form layouts, and no memorable visual identity. This redesign treats every pixel as a demonstration of engineering craft and design excellence. The goal: when opened side-by-side with any other university campus platform, NUverse must clearly win on visual quality, interaction polish, and emotional impact.
+
+**Architecture Decisions**
+
+- **Campus photo as the visual foundation:** The NU Laguna campus photo (`public/images/campus.jpg`) is now the backdrop for all three public pages. Light mode renders it with a medium NU-blue tint overlay (`rgba(18,48,140,0.50)`), keeping the campus clearly visible. Dark mode renders it with a deep dark overlay (`rgba(4,7,18,0.78)`) plus the existing CSS star field. Both modes read as obviously distinct — the light mode feels like campus daytime, dark mode like campus night.
+- **Mouse parallax on landing hero:** `onMouseMove` on the hero section reads cursor position relative to the section and applies `translate(x, y)` to the campus photo (`±20px / ±12px` max). The photo is sized `115%` to prevent edges showing during movement. Transition is `0.15s ease-out` for smooth but responsive feel. No library dependency — raw DOM math.
+- **`campus-breathe` CSS animation:** Applied to the campus photo on all three pages. A `30s` ease-in-out `scale(1.0 → 1.06)` cycle gives the photo subtle life without being distracting. GPU-only (transform) — no layout thrash.
+- **Chibi bulldog mascot (landing only):** A 96×108px SVG bulldog character positioned absolute bottom-right of the hero. All animations are CSS-class-driven (`.chibi-root`, `.chibi-arm`, `.chibi-tail`, `.chibi-eye`, `.chibi-eye-r`) — no React state drives animation properties, eliminating the re-render glitch that caused jitter in the previous implementation. The arm auto-waves via `chibi-wave-auto` (waves during 68–96% of an 8s cycle, rests the remainder). `.chibi-root:hover` accelerates bob, wave, and tail CSS animations via CSS selector cascade. A speech bubble cycles through 6 messages using `opacity` + `transform` CSS transitions (no animation re-mounting).
+- **Floating particles:** 12 particles (gold/blue/white) across the full hero width, driven by `particle-rise` keyframe. Each has distinct `bottom` origin, `left` position, size, delay, and duration — preventing the synchronized "all rising together" artifact from the previous 10-particle version.
+- **Scroll-aware navbar:** `window.scroll` listener (passive) sets `navScrolled` state at 50px. Below threshold: `transparent` background, no border. Above threshold: glass morphism (`backdrop-filter: blur(20px)`) with mode-appropriate background. Nav text color adapts — always white over the hero photo.
+- **Editorial hero typography:** Heading uses `clamp(3.5rem, 11vw, 7.5rem)` with `font-weight: 900` and `letter-spacing: -0.03em`. "NUverse" renders in a `135deg` gradient (`white → #cfe0ff → #a8c5ff → #f5b300`) with `drop-shadow` filter for glow depth. "LAGUNA" renders smaller (`0.44em`) in a pure gold gradient with `letter-spacing: 0.3em` — two distinct typographic registers on a single heading. A decorative gradient divider line sits between the heading and subtitle.
+- **Halo ring effect:** A `560×560px` radial gradient div (`rgba(74,110,232,0.12)` center → transparent) is positioned absolute behind the hero text, giving the content area a subtle atmospheric depth without obscuring the campus photo.
+- **AuthLayout — campus photo left panel:** The `auth-panel-bg` CSS class is now a solid dark fallback gradient. The actual left panel renders the campus photo via `<img>` with `campus-breathe` animation, overlaid with 4 floating orbs (using existing `float-orb` keyframe). Content includes a 80px NUverse mark with glow drop-shadow, a route-aware headline ("Welcome to" for login / "Join the" for register), gradient-text "NUverse Laguna", subtitle, and 5 module tags. Bottom credit stays fixed.
+- **Form panel background:** Right panel uses `radial-gradient(ellipse ...)` to inject a faint blue tint into an otherwise flat background. In light mode: `#f8faff` base with a radial glow at bottom-right. In dark mode: `var(--color-bg)` with a radial glow at top-left. Neither is visible as a distinct element — just removes the "pure flat white/black" look.
+- **Premium `Input` component:** Height raised from `h-11` (44px) to `h-12` (48px). Border upgraded from `border` (1px) to `border-[1.5px]`. Border radius from `rounded-lg` to `rounded-xl`. On focus: a separate overlay `<div>` with `box-shadow: 0 0 0 3px rgba(74,110,232,0.15)` provides the glow ring (avoids CSS `ring` utility artifacts). Label transitions to `var(--color-primary)` color on focus via inline style + `useState`. Error messages now include an inline SVG warning icon. `outline-none` replaces `focus-visible:ring-2` (the overlay div handles focus indication). Placeholder opacity at 40% prevents it from competing with real input text.
+- **Submit buttons:** Height raised to `h-12`. Login button: `#1f3a8a → #4a6ee8 → #6d55e8` with `0 4px 24px rgba(74,110,232,0.38)` shadow. Register button: `#1f3a8a → #4a6ee8 → #8b5cf6 → #f59e0b` — a blue-to-gold sweep that's visually distinct from the login button. Both display `→` as part of the button text label. `hover:-translate-y-0.5` on both.
+- **ThemeToggle — constant motion:** Sun icon: rays group has `animation: sun-spin-continuous 10s linear infinite` always active — not hover-triggered. Moon icon: sparkle `<circle>` elements retain `sparkle-pop`/`sparkle-pop-2` animation. The previous `moon-float` up/down animation was removed (it competed with the sparkles visually). The CSS `:hover .sun-rays` rule that previously triggered a one-shot spin is replaced with hover filter on `.theme-toggle-moon` only.
+- **Module section light/dark:** Module overview section uses `#ffffff` in light mode, `#0a0f1e` in dark mode — a clear and unambiguous contrast. Heading color, description text color, border color, and card background all switch conditionally. Each card has an accent color sweep (`width: 0 → 100%`) on hover using the module's `accent` color.
+- **`star field` (dark mode):** The `.stars-wrap` div renders on both the landing page and within the AuthLayout — CSS star field appears behind all content in dark mode via `z-index` layering. No JS.
+
+**New CSS Keyframes Added to `index.css`**
+- `sun-spin-continuous` — full `0 → 360deg` rotation for always-on sun rays
+- `campus-breathe` — `scale(1.0 → 1.06)` 30s ease-in-out loop on campus photo
+- `particle-rise` — particles drift upward with opacity fade in/out
+- `hero-reveal` — entrance: `translateY(30px) opacity:0 → translateY(0) opacity:1`
+- `chibi-bob` — 2.4s vertical bob for chibi body
+- `chibi-wave-auto` — 8s cycle: arm rests 68%, waves 28%, returns 4%
+- `chibi-wave-fast` — fast wave for hover state
+- `chibi-blink` — 4.5s eye scale-Y collapse and restore
+- `chibi-tail-wag` / `chibi-tail-fast` — tail rotation with transform-origin at root
+- `bubble-in` — speech bubble entrance scale + fade
+
+**New CSS Classes Added**
+- `.chibi-root` — applies `chibi-bob` animation; `:hover` accelerates it
+- `.chibi-arm` — applies `chibi-wave-auto`; `.chibi-root:hover .chibi-arm` switches to `chibi-wave-fast`
+- `.chibi-tail` / `.chibi-root:hover .chibi-tail` — normal vs fast tail wag
+- `.chibi-eye` / `.chibi-eye-r` — staggered blink on both pupils
+
+**Affected Files**
+- `modules/landing/pages/LandingPage.tsx` — complete rewrite; campus photo, parallax, particles, editorial hero, chibi mascot, module grid, scroll-aware nav, footer
+- `shared/layouts/AuthLayout.tsx` — complete rewrite; campus photo left panel, floating orbs, route-aware headline, premium right panel background
+- `modules/auth/pages/LoginPage.tsx` — rewrite; `clamp()` heading, gradient text, stripped to essentials
+- `modules/auth/pages/RegisterPage.tsx` — rewrite; `clamp()` heading, gradient text, redesigned success state
+- `modules/auth/components/LoginForm.tsx` — premium button (`h-12`, `→`, stronger shadow), consistent `gap-5`
+- `modules/auth/components/RegisterForm.tsx` — premium button, consistent `gap-5`, cleaner strength bar
+- `shared/components/ui/Input.tsx` — `h-12`, `rounded-xl`, `border-[1.5px]`, focus glow overlay div, label color transition, icon in error message
+- `shared/components/ThemeToggle.tsx` — sun rays always rotate via `sun-spin-continuous`; moon float removed; sparkles retained
+- `src/index.css` — multiple new keyframes and CSS classes as listed above
+
+**Endpoints / Entities / Migrations**
+None. Frontend-only changes.
+
+---
+
+## [0.30.0] — 2026-05-31
+
+### Email Domain Update + Suggestions Module Removed
+
+**Business Purpose**
+The official student email domain for NU Laguna is `@students.nu-laguna.edu.ph`, not `@national-u.edu.ph`. All registration validation, placeholder text, notices, and backend allowed-domain configuration are updated to reflect the correct domain. The Suggestions & Feedback module is removed from the platform — it was never fully implemented (frontend stub only, no backend), and removing it reduces scope to what can actually be demonstrated.
+
+**Architecture Decisions**
+
+- **Email domain change:** The domain constant `NU_EMAIL_DOMAIN` in `schemas.ts` changed from `'national-u.edu.ph'` to `'students.nu-laguna.edu.ph'`. The backend `application.yml` default for `auth.allowed-email-domains` changed from `national-u.edu.ph` to `students.nu-laguna.edu.ph`. `AuthConfig.java` reads from yml — no Java code change needed. Admin/faculty demo accounts in `DevDataSeeder.java` use `@nu-laguna.edu.ph` (they bypass registration validation since the seeder creates users directly). Student demo accounts updated to `@students.nu-laguna.edu.ph`.
+- **Suggestions module deletion:** Three frontend files deleted: `SuggestionsPage.tsx`, `suggestionsApi.ts`, `types.ts`. Two backend Flyway migrations deleted: `V10__suggestions.sql`, `V14__suggestion_votes_updated_at.sql`. All references purged: `paths.suggestions` removed from `paths.ts`; nav link removed from `AppLayout.tsx`; module shortcut removed from `DashboardPage.tsx`; speech tip removed from `BulldogCompanion.tsx`; XP row removed from `ChibiPage.tsx`; page mood mapping removed from `BulldogCompanion.tsx`; `--color-module-suggestions` CSS variable removed from `index.css`.
+- **Test files updated:** All backend and frontend test files referencing `national-u.edu.ph` updated to `students.nu-laguna.edu.ph`. `schemas.test.ts` updated to use the new domain in its valid test fixture.
+
+**Affected Files**
+- `modules/auth/schemas.ts` — domain constant updated
+- `modules/auth/schemas.test.ts` — test fixture email updated
+- `modules/auth/components/RegisterForm.tsx` — placeholder text updated
+- `modules/auth/components/LoginForm.tsx` — placeholder text updated
+- `modules/auth/pages/RegisterPage.tsx` — domain notice text updated
+- `backend/.../application.yml` — `allowed-email-domains` default updated
+- `backend/.../DevDataSeeder.java` — student emails updated to new domain
+- `backend/.../AuthControllerTest.java` — test emails updated
+- `backend/.../AuthServiceImplTest.java` — test emails updated
+- `backend/.../NUverseLagunaApplicationTests.java` — test email updated
+- `backend/.../application-test.yml` — domain updated
+- `shared/routes/paths.ts` — `suggestions` path removed
+- `shared/layouts/AppLayout.tsx` — Suggestions nav link removed
+- `modules/dashboard/pages/DashboardPage.tsx` — Suggestions shortcut removed
+- `shared/components/BulldogCompanion.tsx` — tip text and mood mapping removed
+- `modules/chibi/pages/ChibiPage.tsx` — XP row removed
+- `src/index.css` — `--color-module-suggestions` removed
+- `modules/suggestions/` — entire directory deleted
+- `backend/.../V10__suggestions.sql` — deleted
+- `backend/.../V14__suggestion_votes_updated_at.sql` — deleted
+
+**Endpoints / Entities / Migrations**
+V10 and V14 deleted. Backend validation domain updated.
+
+---
+
 ## [0.28.0] — 2026-05-30
 
 ### Auth Pages — Premium Split-Screen Redesign (Login + Register)

@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import type { ApiError, ApiResponse } from './types'
 import { useAuthStore } from '@/shared/store/authStore'
+import { useSuspensionStore } from '@/shared/store/suspensionStore'
 
 /**
  * Single Axios instance for the app. `withCredentials` ensures the HTTP-only
@@ -13,13 +14,22 @@ export const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// A 401 means the session is gone or invalid. Clearing the auth store lets the
-// route guards react and redirect to login; no hard navigation required.
+// A 401 means the session is gone or invalid.
+// A 403 ACCOUNT_SUSPENDED means the user's account was suspended mid-session.
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiResponse<unknown>>) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().clearUser()
+    }
+    if (
+      error.response?.status === 403 &&
+      (error.response?.data as ApiResponse<unknown>)?.message === 'ACCOUNT_SUSPENDED'
+    ) {
+      const data = (error.response?.data as ApiResponse<{ suspendedUntil: string | null; reason: string | null; suspendCount: number }>)?.data
+      if (data) {
+        useSuspensionStore.getState().setSuspension(data)
+      }
     }
     return Promise.reject(error)
   },

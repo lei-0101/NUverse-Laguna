@@ -31,4 +31,5 @@ public interface MarketplaceService {
     Page<ListingCardResponse> getMyListings(UUID userId, Pageable pageable);
     void reportListing(UUID reporterId, UUID listingId, ReportListingRequest request);
     ListingResponse suspendListing(UUID listingId);
+    void messageSeller(UUID buyerId, UUID listingId, String message);
 }

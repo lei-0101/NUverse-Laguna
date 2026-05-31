@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { profileApi } from '../services/profileApi'
+import { useAuthStore } from '@/shared/store/authStore'
 import type {
   ProfileResponse,
   ProfileVisibility,
@@ -13,6 +14,7 @@ export const profileKeys = {
   public: (userId: string) => ['profile', 'public', userId] as const,
   followers: (page: number) => ['profile', 'followers', page] as const,
   following: (page: number) => ['profile', 'following', page] as const,
+  pendingFollowers: ['profile', 'pending-followers'] as const,
 }
 
 export function useMyProfile() {
@@ -24,9 +26,14 @@ export function useMyProfile() {
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient()
+  const { user, setUser } = useAuthStore()
   return useMutation({
     mutationFn: (payload: UpdateProfilePayload) => profileApi.updateProfile(payload),
-    onSuccess: (profile) => queryClient.setQueryData(profileKeys.me, profile),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(profileKeys.me, profile)
+      // Sync nav/header name immediately
+      if (user) setUser({ ...user, fullName: profile.fullName })
+    },
   })
 }
 
@@ -115,5 +122,29 @@ export function useFollowing(page: number) {
   return useQuery({
     queryKey: profileKeys.following(page),
     queryFn: () => profileApi.getFollowing(page),
+  })
+}
+
+export function usePendingFollowers() {
+  return useQuery({
+    queryKey: profileKeys.pendingFollowers,
+    queryFn: profileApi.getPendingFollowers,
+    staleTime: 60_000,
+  })
+}
+
+export function useApproveFollow() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (followerId: string) => profileApi.approveFollow(followerId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKeys.pendingFollowers }),
+  })
+}
+
+export function useRejectFollow() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (followerId: string) => profileApi.rejectFollow(followerId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileKeys.pendingFollowers }),
   })
 }

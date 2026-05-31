@@ -26,6 +26,9 @@ const sampleEvent: CampusEvent = {
   rsvpOpen: true,
   isRsvpd: true,
   createdAt: '2026-05-30T00:00:00',
+  reactionCount: 0,
+  userReaction: null,
+  commentCount: 0,
 }
 
 function wrapper({ children }: { children: ReactNode }) {

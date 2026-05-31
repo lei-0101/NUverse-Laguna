@@ -67,6 +67,14 @@ public class ProductVariant extends BaseEntity {
         this.stock = newStock;
     }
 
+    public void update(String size, String color, String sku, int stock, BigDecimal price) {
+        this.size = size;
+        this.color = color;
+        this.sku = sku;
+        updateStock(stock);
+        this.price = price;
+    }
+
     public boolean isAvailable() {
         return this.stock > 0;
     }

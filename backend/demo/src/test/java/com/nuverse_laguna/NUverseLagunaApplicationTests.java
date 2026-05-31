@@ -47,7 +47,7 @@ class NUverseLagunaApplicationTests {
         // Regression guard: the profile is created in an AFTER_COMMIT listener and only
         // persists because that listener runs in a REQUIRES_NEW transaction. Without it,
         // the INSERT joins the already-committed registration transaction and is lost.
-        String email = "profile.regression@national-u.edu.ph";
+        String email = "profile.regression@students.nu-laguna.edu.ph";
         authService.register(new RegisterRequest(email, "Password1", "Profile Regression"));
 
         await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->

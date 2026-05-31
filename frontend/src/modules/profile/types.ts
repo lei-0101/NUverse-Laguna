@@ -34,7 +34,10 @@ export interface PublicProfileResponse {
   followerCount: number
   followingCount: number
   isFollowing: boolean
+  isFollowPending: boolean
   isPrivate: boolean
+  hideChibiShowcase: boolean
+  role: string | null
 }
 
 /** Mirrors `FollowSummary` — a row in a follower/following list. */

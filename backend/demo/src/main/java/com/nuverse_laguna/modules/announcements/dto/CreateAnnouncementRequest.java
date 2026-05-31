@@ -10,5 +10,6 @@ public record CreateAnnouncementRequest(
         @NotBlank @Size(max = 200) String title,
         @NotBlank String body,
         @NotNull String priority,
-        LocalDateTime expiresAt
+        LocalDateTime expiresAt,
+        String imageUrl
 ) {}

@@ -14,11 +14,13 @@ import com.nuverse_laguna.modules.marketplace.repository.ListingReportRepository
 import com.nuverse_laguna.modules.marketplace.repository.MarketplaceListingRepository;
 import com.nuverse_laguna.modules.marketplace.repository.MarketplaceListingRepository.ListingThumbnailProjection;
 import com.nuverse_laguna.modules.marketplace.repository.SavedListingRepository;
+import com.nuverse_laguna.modules.notifications.application.NotificationService;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.exception.ResourceNotFoundException;
 import com.nuverse_laguna.shared.profile.ProfileSummary;
 import com.nuverse_laguna.shared.profile.UserProfileReader;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +57,8 @@ class MarketplaceServiceImplTest {
     @Mock private ListingReportRepository reportRepository;
     @Mock private UserProfileReader userProfileReader;
     @Mock private com.nuverse_laguna.shared.storage.StorageService storageService;
+    @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private NotificationService notificationService;
 
     private MarketplaceServiceImpl service;
 
@@ -66,7 +70,7 @@ class MarketplaceServiceImplTest {
     void setUp() {
         service = new MarketplaceServiceImpl(
                 listingRepository, savedListingRepository, reportRepository,
-                userProfileReader, storageService
+                userProfileReader, storageService, eventPublisher, notificationService
         );
     }
 

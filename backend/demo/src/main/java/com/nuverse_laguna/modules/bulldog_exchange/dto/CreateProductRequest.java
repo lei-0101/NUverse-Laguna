@@ -1,6 +1,7 @@
 package com.nuverse_laguna.modules.bulldog_exchange.dto;
 
 import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseCategory;
+import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseGender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,5 +20,7 @@ public record CreateProductRequest(
         String imageUrl,
 
         @NotNull(message = "Category is required")
-        MerchandiseCategory category
+        MerchandiseCategory category,
+
+        MerchandiseGender gender
 ) {}

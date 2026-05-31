@@ -14,5 +14,8 @@ public record PublicProfileResponse(
         long followerCount,
         long followingCount,
         boolean isFollowing,
-        boolean isPrivate
+        boolean isFollowPending,
+        boolean isPrivate,
+        boolean hideChibiShowcase,
+        String role
 ) {}

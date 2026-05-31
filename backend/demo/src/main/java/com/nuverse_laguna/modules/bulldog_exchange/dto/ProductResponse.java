@@ -11,6 +11,7 @@ public record ProductResponse(
         String category,
         String imageUrl,
         boolean active,
+        boolean limited,
         List<VariantResponse> variants,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

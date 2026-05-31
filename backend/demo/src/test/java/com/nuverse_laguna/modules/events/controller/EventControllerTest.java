@@ -50,6 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EventControllerTest {
 
     @Mock EventService eventService;
+    @Mock com.nuverse_laguna.modules.profile.repository.UserProfileRepository profileRepository;
 
     MockMvc mockMvc;
     ObjectMapper objectMapper;
@@ -80,7 +81,7 @@ class EventControllerTest {
                 .disable(MapperFeature.REQUIRE_HANDLERS_FOR_JAVA8_TIMES)
                 .registerModule(dateModule);
 
-        EventController controller = new EventController(eventService);
+        EventController controller = new EventController(eventService, profileRepository);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
@@ -299,7 +300,7 @@ class EventControllerTest {
     private EventResponse sampleResponse(boolean isRsvpd) {
         return new EventResponse(EVENT_ID, USER_ID, "NU Open Day", "Join us!",
                 "ACADEMIC", "NU Gym", FUTURE, null, null, 100,
-                "DRAFT", 5L, true, isRsvpd, LocalDateTime.now().minusDays(1));
+                "DRAFT", 5L, true, isRsvpd, LocalDateTime.now().minusDays(1), 0L, null, 0L);
     }
 
     private RsvpResponse sampleRsvpResponse() {

@@ -16,5 +16,8 @@ public record LostFoundItemResponse(
         LocalDate itemDate,
         String imageUrl,
         String contact,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        long reactionCount,
+        String userReaction,
+        int commentCount
 ) {}

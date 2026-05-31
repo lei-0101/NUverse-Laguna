@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.nuverse_laguna.modules.bulldog_exchange.application.BulldogExchangeService;
 import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseCategory;
+import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseGender;
 import com.nuverse_laguna.modules.bulldog_exchange.dto.*;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.handler.GlobalExceptionHandler;
@@ -112,7 +113,7 @@ class BulldogExchangeControllerTest {
     void getProducts_returnsOk() throws Exception {
         Page<ProductCardResponse> page = new PageImpl<>(
                 List.of(sampleCard()), PageRequest.of(0, 12), 1);
-        when(exchangeService.getProducts(any(), any())).thenReturn(page);
+        when(exchangeService.getProducts(any(), any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/bulldog-exchange")
                         .with(asUser(studentAuth())))
@@ -125,14 +126,14 @@ class BulldogExchangeControllerTest {
     @DisplayName("GET /api/bulldog-exchange: category filter is forwarded to service")
     void getProducts_withCategoryFilter_forwardsToService() throws Exception {
         Page<ProductCardResponse> page = new PageImpl<>(List.of(), PageRequest.of(0, 12), 0);
-        when(exchangeService.getProducts(any(), any())).thenReturn(page);
+        when(exchangeService.getProducts(any(), any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/bulldog-exchange")
                         .param("category", "CLOTHING")
                         .with(asUser(studentAuth())))
                 .andExpect(status().isOk());
 
-        verify(exchangeService).getProducts(eq(MerchandiseCategory.CLOTHING), any());
+        verify(exchangeService).getProducts(any(), eq(MerchandiseCategory.CLOTHING), any(), any());
     }
 
     // ─── GET /api/bulldog-exchange/{productId} ────────────────────────────────
@@ -166,7 +167,7 @@ class BulldogExchangeControllerTest {
     @DisplayName("POST /api/bulldog-exchange: admin creates product — returns 201")
     void createProduct_admin_returns201() throws Exception {
         CreateProductRequest request = new CreateProductRequest(
-                "NU Hoodie", "Warm hoodie", null, MerchandiseCategory.CLOTHING);
+                "NU Hoodie", "Warm hoodie", null, MerchandiseCategory.CLOTHING, MerchandiseGender.UNISEX);
         when(exchangeService.createProduct(any())).thenReturn(sampleDetail());
 
         mockMvc.perform(post("/api/bulldog-exchange")
@@ -198,7 +199,7 @@ class BulldogExchangeControllerTest {
     @DisplayName("PUT /api/bulldog-exchange/{id}: admin updates product — returns 200")
     void updateProduct_admin_returnsOk() throws Exception {
         UpdateProductRequest request = new UpdateProductRequest(
-                "NU Shirt v2", "Updated description", null, MerchandiseCategory.CLOTHING);
+                "NU Shirt v2", "Updated description", null, MerchandiseCategory.CLOTHING, MerchandiseGender.UNISEX);
         when(exchangeService.updateProduct(eq(PRODUCT_ID), any())).thenReturn(sampleDetail());
 
         mockMvc.perform(put("/api/bulldog-exchange/" + PRODUCT_ID)
@@ -439,12 +440,12 @@ class BulldogExchangeControllerTest {
 
     private ProductCardResponse sampleCard() {
         return new ProductCardResponse(
-                PRODUCT_ID, "NU Shirt", "CLOTHING", null, 2, BigDecimal.valueOf(299), true);
+                PRODUCT_ID, "NU Shirt", "CLOTHING", "UNISEX", null, 2, BigDecimal.valueOf(299), true, false);
     }
 
     private ProductResponse sampleDetail() {
         return new ProductResponse(
-                PRODUCT_ID, "NU Shirt", "Official NU shirt", "CLOTHING", null, true,
+                PRODUCT_ID, "NU Shirt", "Official NU shirt", "CLOTHING", null, true, false,
                 List.of(), LocalDateTime.now(), LocalDateTime.now());
     }
 

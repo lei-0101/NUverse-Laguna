@@ -14,4 +14,25 @@ export interface LostFoundItem {
   imageUrl: string | null
   contact: string
   createdAt: string
+  reactionCount: number
+  userReaction: string | null
+  commentCount: number
+}
+
+export interface LostFoundComment {
+  id: string
+  authorId: string
+  authorName: string
+  body: string
+  createdAt: string
+}
+
+export interface CreateLostFoundPayload {
+  type: ItemType
+  title: string
+  description: string
+  location: string
+  itemDate: string
+  imageUrl: string | null
+  contact: string
 }

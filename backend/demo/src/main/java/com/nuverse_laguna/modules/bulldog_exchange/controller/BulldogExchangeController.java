@@ -2,6 +2,7 @@ package com.nuverse_laguna.modules.bulldog_exchange.controller;
 
 import com.nuverse_laguna.modules.bulldog_exchange.application.BulldogExchangeService;
 import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseCategory;
+import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseGender;
 import com.nuverse_laguna.modules.bulldog_exchange.dto.*;
 import com.nuverse_laguna.shared.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -40,13 +41,15 @@ public class BulldogExchangeController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductCardResponse>>> getProducts(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) MerchandiseCategory category,
+            @RequestParam(required = false) MerchandiseGender gender,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return ResponseEntity.ok(ApiResponse.ok("Products retrieved",
-                exchangeService.getProducts(category, pageable)));
+                exchangeService.getProducts(keyword, category, gender, pageable)));
     }
 
     @GetMapping("/{productId}")
@@ -107,6 +110,23 @@ public class BulldogExchangeController {
     ) {
         return ResponseEntity.ok(ApiResponse.ok("Stock updated",
                 exchangeService.updateVariantStock(variantId, request)));
+    }
+
+    @PutMapping("/variants/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<VariantResponse>> updateVariant(
+            @PathVariable UUID variantId,
+            @Valid @RequestBody AddVariantRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok("Variant updated",
+                exchangeService.updateVariant(variantId, request)));
+    }
+
+    @DeleteMapping("/variants/{variantId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteVariant(@PathVariable UUID variantId) {
+        exchangeService.deleteVariant(variantId);
+        return ResponseEntity.ok(ApiResponse.ok("Variant deleted"));
     }
 
     // ── Student: reservation management ───────────────────────────────────────

@@ -4,75 +4,66 @@ import { paths } from '@/shared/routes/paths'
 import { useRegister } from '../hooks/useAuth'
 import { RegisterForm } from '../components/RegisterForm'
 import type { RegisterFormValues } from '../schemas'
+import { useThemeStore } from '@/shared/store/themeStore'
 
 export function RegisterPage() {
   const register = useRegister()
-
-  const handleSubmit = (values: RegisterFormValues) => {
-    register.mutate(values)
-  }
+  const isDark   = useThemeStore((s) => s.theme === 'dark')
 
   if (register.isSuccess) {
     return (
-      <div className="animate-[page-enter_0.4s_ease-out] text-center">
-        {/* Success icon with ring glow */}
-        <div className="mx-auto mb-6 relative w-20 h-20 flex items-center justify-center">
+      <div className="text-center">
+        {/* Pulsing success ring */}
+        <div className="mx-auto mb-8 relative h-24 w-24 flex items-center justify-center">
           <div
-            className="absolute inset-0 rounded-full opacity-30 animate-ping"
-            style={{ background: 'rgba(31,149,84,0.5)', animationDuration: '2s' }}
+            className="absolute inset-0 rounded-full animate-ping"
+            style={{ background: 'rgba(34,197,94,0.15)', animationDuration: '2.2s' }}
           />
           <div
-            className="relative flex h-20 w-20 items-center justify-center rounded-full"
+            className="relative flex h-24 w-24 items-center justify-center rounded-full"
             style={{
-              background:
-                'linear-gradient(135deg, rgba(31,146,84,0.18) 0%, rgba(47,181,116,0.22) 100%)',
-              boxShadow: '0 0 0 1px rgba(31,146,84,0.3), 0 8px 32px rgba(31,146,84,0.15)',
+              background: isDark ? 'rgba(34,197,94,0.10)' : 'rgba(34,197,94,0.08)',
+              border: '1.5px solid rgba(34,197,94,0.35)',
+              boxShadow: '0 0 40px rgba(34,197,94,0.18)',
             }}
           >
-            <svg
-              width="34"
-              height="34"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-              style={{ color: '#2fb574' }}
-            >
-              <path
-                d="M20 6L9 17l-5-5"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ color: '#22c55e' }}>
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
         </div>
 
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-          Check your inbox
+        {/* Editorial heading */}
+        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.38em]"
+          style={{ color: isDark ? 'rgba(34,197,94,0.7)' : 'rgba(21,128,61,0.7)' }}>
+          — Account Created —
+        </p>
+        <h1
+          className="font-black tracking-tight"
+          style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', lineHeight: 1.05, color: isDark ? '#ffffff' : '#0a1540' }}
+        >
+          Check Your<br />Inbox.
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-          We&apos;ve sent a verification link to your email. Click it to activate your account,
-          then sign in.
+
+        <div className="mx-auto my-5 h-[2px] w-14 rounded-full"
+          style={{ background: 'linear-gradient(90deg, #22c55e, rgba(74,110,232,0.4), transparent)' }} />
+
+        <p className="text-sm leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.68)' : '#3d5080' }}>
+          A verification link has been sent to your email.<br />
+          Click it to activate your account, then sign in.
         </p>
 
         <Link
           to={paths.login}
-          className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl h-11 text-sm font-semibold text-white transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+          className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl h-12 text-[15px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.97]"
           style={{
             background: 'linear-gradient(135deg, #1f3a8a 0%, #4a6ee8 100%)',
-            boxShadow: '0 4px 24px rgba(74,110,232,0.28)',
+            boxShadow: '0 4px 24px rgba(74,110,232,0.35)',
           }}
         >
-          Go to sign in
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M5 12h14M12 5l7 7-7 7"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          Go to Sign In
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Link>
       </div>
@@ -80,75 +71,74 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="animate-[page-enter_0.4s_ease-out]">
-      {/* Heading block */}
-      <div className="mb-7">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground mb-3 select-none">
-          NU Laguna Community
-        </p>
-        <h1 className="text-[1.875rem] font-extrabold tracking-tight text-foreground leading-tight">
-          Create your{' '}
-          <span
-            style={{
-              background:
-                'linear-gradient(135deg, #4a6ee8 0%, #a78bfa 50%, #f5b300 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            account
-          </span>
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          Exclusive to NU Laguna students, faculty, and staff.
-        </p>
-      </div>
+    <div>
+      {/* Fashion editorial eyebrow */}
+      <p
+        className="mb-5 text-xs font-black uppercase"
+        style={{
+          letterSpacing: '0.32em',
+          color: isDark ? 'rgba(167,139,250,0.88)' : 'rgba(31,58,138,0.65)',
+          animation: 'hero-reveal 0.4s ease-out both',
+        }}
+      >
+        — New Member —
+      </p>
 
-      {/* NU email notice */}
-      <div className="mb-6 flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/[0.07] px-4 py-3">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          className="mt-0.5 shrink-0 text-primary"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-          <path
-            d="M12 8v4M12 16h.01"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-        <p className="text-xs text-primary/85 leading-relaxed">
-          Use your official{' '}
-          <strong className="font-semibold text-primary">@national-u.edu.ph</strong> email to
-          register.
-        </p>
-      </div>
+      {/* Massive editorial heading — two lines, clear contrast */}
+      <h1
+        className="font-black tracking-tight"
+        style={{
+          fontSize: 'clamp(2.4rem, 5vw, 3.2rem)',
+          lineHeight: 1.0,
+          color: isDark ? '#ffffff' : '#0a1540',
+          animation: 'hero-reveal 0.4s ease-out 0.06s both',
+        }}
+      >
+        Join the<br />
+        <span style={{ color: isDark ? '#a5bfff' : '#1f3a8a' }}>
+          NUverse.
+        </span>
+      </h1>
 
-      <RegisterForm
-        onSubmit={handleSubmit}
-        isSubmitting={register.isPending}
-        serverError={
-          register.isError ? toApiError(register.error).message : undefined
-        }
+      {/* Purple → gold accent rule (different from login's gold) */}
+      <div
+        className="my-5 h-[2px] w-14 rounded-full"
+        style={{
+          background: 'linear-gradient(90deg, rgba(167,139,250,0.9), rgba(245,179,0,0.6), transparent)',
+          animation: 'hero-reveal 0.4s ease-out 0.12s both',
+        }}
+        aria-hidden="true"
       />
 
-      {/* Footer */}
-      <div className="mt-8 pt-6 border-t border-border/40 text-center">
-        <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <Link
-            to={paths.login}
-            className="font-semibold text-primary hover:text-primary-hover transition-colors"
-          >
-            Sign in →
-          </Link>
+      {/* Domain badge */}
+      <div
+        className="mb-6 flex items-start gap-3 rounded-xl border px-4 py-3.5"
+        style={{
+          background: isDark ? 'rgba(31,58,138,0.14)' : 'rgba(31,58,138,0.06)',
+          borderColor: isDark ? 'rgba(74,110,232,0.28)' : 'rgba(31,58,138,0.16)',
+          animation: 'hero-reveal 0.4s ease-out 0.18s both',
+        }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0" aria-hidden="true"
+          style={{ color: isDark ? '#a5bfff' : '#1f3a8a' }}>
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+          <path d="M12 8v4M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        <p className="text-sm leading-relaxed"
+          style={{ color: isDark ? 'rgba(165,191,255,0.88)' : 'rgba(31,58,138,0.82)' }}>
+          Requires your{' '}
+          <strong className="font-bold" style={{ color: isDark ? '#a5bfff' : '#1f3a8a' }}>
+            @students.nu-laguna.edu.ph
+          </strong>{' '}email.
         </p>
+      </div>
+
+      <div style={{ animation: 'hero-reveal 0.4s ease-out 0.24s both' }}>
+        <RegisterForm
+          onSubmit={(values: RegisterFormValues) => register.mutate(values)}
+          isSubmitting={register.isPending}
+          serverError={register.isError ? toApiError(register.error).message : undefined}
+        />
       </div>
     </div>
   )

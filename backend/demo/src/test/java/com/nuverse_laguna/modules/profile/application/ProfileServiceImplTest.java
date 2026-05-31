@@ -32,6 +32,7 @@ class ProfileServiceImplTest {
     @Mock private FollowRepository followRepository;
     @Mock private StorageService storageService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private com.nuverse_laguna.modules.auth.repository.UserRepository userRepository;
 
     private ProfileServiceImpl service;
 
@@ -40,7 +41,7 @@ class ProfileServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new ProfileServiceImpl(userProfileRepository, followRepository, storageService, eventPublisher);
+        service = new ProfileServiceImpl(userProfileRepository, followRepository, storageService, eventPublisher, userRepository);
         profile = UserProfile.createFor(USER_ID, "Juan Dela Cruz");
 
         when(userProfileRepository.findByUserId(USER_ID)).thenReturn(Optional.of(profile));

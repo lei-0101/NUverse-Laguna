@@ -15,6 +15,11 @@ import com.nuverse_laguna.modules.marketplace.repository.ListingReportRepository
 import com.nuverse_laguna.modules.marketplace.repository.ListingSpecification;
 import com.nuverse_laguna.modules.marketplace.repository.MarketplaceListingRepository;
 import com.nuverse_laguna.modules.marketplace.repository.SavedListingRepository;
+import com.nuverse_laguna.modules.notifications.application.NotificationService;
+import com.nuverse_laguna.modules.notifications.domain.NotificationType;
+import com.nuverse_laguna.modules.notifications.domain.ReferenceType;
+import com.nuverse_laguna.shared.event.MarketplaceListingCreatedEvent;
+import com.nuverse_laguna.shared.event.MarketplaceListingSoldEvent;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.exception.ResourceNotFoundException;
 import com.nuverse_laguna.shared.profile.ProfileSummary;
@@ -22,6 +27,7 @@ import com.nuverse_laguna.shared.profile.UserProfileReader;
 import com.nuverse_laguna.shared.storage.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,6 +58,8 @@ public class MarketplaceServiceImpl implements MarketplaceService {
     private final ListingReportRepository reportRepository;
     private final UserProfileReader userProfileReader;
     private final StorageService storageService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationService notificationService;
 
     // ── Image upload ───────────────────────────────────────────────────────────
 
@@ -78,6 +86,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
         }
         MarketplaceListing saved = listingRepository.save(listing);
         log.info("Listing created: {} by seller {}", saved.getId(), sellerId);
+        eventPublisher.publishEvent(new MarketplaceListingCreatedEvent(sellerId, saved.getId(), saved.getTitle()));
         return toDetailResponse(saved, sellerId, false);
     }
 
@@ -127,7 +136,9 @@ public class MarketplaceServiceImpl implements MarketplaceService {
         MarketplaceListing listing = findListingById(listingId);
         requireOwnership(listing, userId);
         listing.markAsSold();
-        return toDetailResponse(listingRepository.save(listing), userId, false);
+        ListingResponse response = toDetailResponse(listingRepository.save(listing), userId, false);
+        eventPublisher.publishEvent(new MarketplaceListingSoldEvent(userId, listingId, listing.getTitle()));
+        return response;
     }
 
     // ── Delete / Moderation ───────────────────────────────────────────────────
@@ -204,6 +215,29 @@ public class MarketplaceServiceImpl implements MarketplaceService {
         }
         reportRepository.save(ListingReport.create(reporterId, listingId, request.reason()));
         log.info("Listing {} reported by user {}", listingId, reporterId);
+    }
+
+    // ── Messaging ─────────────────────────────────────────────────────────────
+
+    @Override
+    public void messageSeller(UUID buyerId, UUID listingId, String message) {
+        MarketplaceListing listing = findListingById(listingId);
+        if (listing.isOwnedBy(buyerId)) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "You cannot message yourself");
+        }
+        String buyerName = userProfileReader.findProfileSummary(buyerId)
+                .map(ProfileSummary::fullName)
+                .orElse("A student");
+        String body = buyerName + " is interested in your listing \"" + listing.getTitle() + "\": " + message;
+        notificationService.create(
+                listing.getSellerId(),
+                NotificationType.MARKETPLACE_MESSAGE,
+                "New message about your listing",
+                body,
+                listingId,
+                ReferenceType.LISTING
+        );
+        log.info("Message sent from {} to seller of listing {}", buyerId, listingId);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

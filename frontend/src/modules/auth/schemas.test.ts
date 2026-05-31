@@ -4,7 +4,7 @@ import { registerSchema, loginSchema } from './schemas'
 describe('registerSchema', () => {
   const valid = {
     fullName: 'Juan Dela Cruz',
-    email: 'juan@national-u.edu.ph',
+    email: 'juan@students.nu-laguna.edu.ph',
     password: 'Password1',
   }
 

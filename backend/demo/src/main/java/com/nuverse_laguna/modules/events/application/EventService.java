@@ -3,10 +3,12 @@ package com.nuverse_laguna.modules.events.application;
 import com.nuverse_laguna.modules.events.domain.EventCategory;
 import com.nuverse_laguna.modules.events.domain.EventStatus;
 import com.nuverse_laguna.modules.events.dto.*;
+import com.nuverse_laguna.shared.dto.ReactionSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface EventService {
@@ -32,5 +34,19 @@ public interface EventService {
 
     Page<RsvpResponse> getMyRsvps(UUID userId, Pageable pageable);
 
+    List<RsvpResponse> getAttendees(UUID eventId);
+
     UploadImageResponse uploadImage(MultipartFile file);
+
+    EventResponse toggleReaction(UUID eventId, UUID userId, String emoji);
+
+    List<ReactionSummary> getReactions(UUID eventId);
+
+    List<EventCommentResponse> getComments(UUID eventId);
+
+    EventCommentResponse addComment(UUID eventId, UUID authorId, String authorName, String body);
+
+    void deleteComment(UUID commentId, UUID userId);
+
+    void adminDeleteComment(UUID commentId);
 }

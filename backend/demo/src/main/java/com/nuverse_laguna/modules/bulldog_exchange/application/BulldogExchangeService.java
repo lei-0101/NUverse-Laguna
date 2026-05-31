@@ -1,6 +1,7 @@
 package com.nuverse_laguna.modules.bulldog_exchange.application;
 
 import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseCategory;
+import com.nuverse_laguna.modules.bulldog_exchange.domain.MerchandiseGender;
 import com.nuverse_laguna.modules.bulldog_exchange.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,8 @@ public interface BulldogExchangeService {
     UploadImageResponse uploadImage(MultipartFile file);
 
     // ── Products ──────────────────────────────────────────────────────────────
-    Page<ProductCardResponse> getProducts(MerchandiseCategory category, Pageable pageable);
+    Page<ProductCardResponse> getProducts(String keyword, MerchandiseCategory category,
+                                          MerchandiseGender gender, Pageable pageable);
     ProductResponse getProduct(UUID productId);
     ProductResponse createProduct(CreateProductRequest request);
     ProductResponse updateProduct(UUID productId, UpdateProductRequest request);
@@ -23,6 +25,8 @@ public interface BulldogExchangeService {
     // ── Variants ──────────────────────────────────────────────────────────────
     ProductResponse addVariant(UUID productId, AddVariantRequest request);
     VariantResponse updateVariantStock(UUID variantId, UpdateStockRequest request);
+    VariantResponse updateVariant(UUID variantId, AddVariantRequest request);
+    void deleteVariant(UUID variantId);
 
     // ── Reservations ──────────────────────────────────────────────────────────
     ReservationResponse createReservation(UUID studentId, UUID variantId);

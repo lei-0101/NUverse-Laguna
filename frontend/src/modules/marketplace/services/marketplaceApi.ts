@@ -74,4 +74,8 @@ export const marketplaceApi = {
   reportListing(listingId: string, payload: ReportPayload): Promise<void> {
     return apiClient.post(`/marketplace/${listingId}/report`, payload).then(() => undefined)
   },
+
+  messageSeller(listingId: string, message: string): Promise<void> {
+    return apiClient.post(`/marketplace/${listingId}/message`, { message }).then(() => undefined)
+  },
 }

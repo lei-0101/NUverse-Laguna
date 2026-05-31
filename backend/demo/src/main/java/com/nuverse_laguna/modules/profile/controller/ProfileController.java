@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -119,6 +120,27 @@ public class ProfileController {
         UUID userId = resolveUserId(auth);
         return ResponseEntity.ok(ApiResponse.ok("Following retrieved",
                 profileService.getFollowing(userId, PageRequest.of(page, size))));
+    }
+
+    @GetMapping("/me/pending-followers")
+    public ResponseEntity<ApiResponse<List<FollowSummary>>> getPendingFollowers(Authentication auth) {
+        UUID userId = resolveUserId(auth);
+        return ResponseEntity.ok(ApiResponse.ok("Pending followers retrieved",
+                profileService.getPendingFollowers(userId)));
+    }
+
+    @PostMapping("/{followerId}/approve-follow")
+    public ResponseEntity<ApiResponse<Void>> approveFollow(Authentication auth, @PathVariable UUID followerId) {
+        UUID ownerId = resolveUserId(auth);
+        profileService.approveFollow(ownerId, followerId);
+        return ResponseEntity.ok(ApiResponse.ok("Follow request approved"));
+    }
+
+    @DeleteMapping("/{followerId}/reject-follow")
+    public ResponseEntity<ApiResponse<Void>> rejectFollow(Authentication auth, @PathVariable UUID followerId) {
+        UUID ownerId = resolveUserId(auth);
+        profileService.rejectFollow(ownerId, followerId);
+        return ResponseEntity.ok(ApiResponse.ok("Follow request rejected"));
     }
 
     private UUID resolveUserId(Authentication auth) {

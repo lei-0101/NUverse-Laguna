@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMutation } from '@tanstack/react-query'
 import { Alert, Avatar, Button, Card } from '@/shared/components/ui'
+import { ConfirmModal } from '@/shared/components/ConfirmModal'
 import { toApiError } from '@/shared/lib/apiClient'
 import { toast } from '@/shared/store/toastStore'
 import { useAuthStore } from '@/shared/store/authStore'
@@ -18,6 +20,7 @@ import { ImageGallery } from '../components/ImageGallery'
 import { ReportModal } from '../components/ReportModal'
 import { CategoryBadge, ConditionBadge, StatusBadge } from '../components/badges'
 import type { ReportFormValues } from '../schemas'
+import { messagesApi } from '@/modules/messages/services/messagesApi'
 
 /** Full listing detail with viewer-aware actions (owner, buyer, admin). */
 export function ListingDetailPage() {
@@ -32,9 +35,18 @@ export function ListingDetailPage() {
   const suspend = useSuspendListing(listingId)
   const report = useReportListing(listingId)
 
-  const [reportOpen, setReportOpen] = useState(false)
-  const [reportError, setReportError] = useState<string>()
-  const [reported, setReported] = useState(false)
+  const [reportOpen,     setReportOpen]     = useState(false)
+  const [reportError,    setReportError]    = useState<string>()
+  const [reported,       setReported]       = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  const startConvo = useMutation({
+    mutationFn: (sellerId: string) => messagesApi.getOrCreate(sellerId),
+    onSuccess: (conv) => {
+      navigate(paths.messages, { state: { conversationId: conv.id } })
+    },
+    onError: () => toast.error('Could not open conversation.'),
+  })
 
   if (isLoading) return (
     <div className="space-y-6 animate-[page-enter_0.3s_ease-out]">
@@ -58,8 +70,10 @@ export function ListingDetailPage() {
   const isAdmin = user?.role === 'ROLE_ADMIN'
 
   const handleDelete = () => {
-    if (!window.confirm('Remove this listing? This cannot be undone.')) return
-    remove.mutate(listingId, { onSuccess: () => navigate(paths.myListings) })
+    remove.mutate(listingId, {
+      onSuccess: () => navigate(paths.myListings),
+      onSettled: () => setShowDeleteConfirm(false),
+    })
   }
 
   const handleReport = (values: ReportFormValues) => {
@@ -133,14 +147,23 @@ export function ListingDetailPage() {
                     Mark as sold
                   </Button>
                 )}
-                <Button variant="danger" isLoading={remove.isPending} onClick={handleDelete}>
+                <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
                   Delete
                 </Button>
               </>
             ) : (
               <>
+                {listing.status === 'AVAILABLE' && (
+                  <Button
+                    variant="primary"
+                    isLoading={startConvo.isPending}
+                    onClick={() => startConvo.mutate(listing.seller.userId)}
+                  >
+                    Message Seller
+                  </Button>
+                )}
                 <Button
-                  variant={listing.isSaved ? 'secondary' : 'primary'}
+                  variant={listing.isSaved ? 'secondary' : 'secondary'}
                   isLoading={toggleSave.isPending}
                   onClick={() => toggleSave.mutate(listing.isSaved)}
                 >
@@ -170,6 +193,17 @@ export function ListingDetailPage() {
         onSubmit={handleReport}
         isSubmitting={report.isPending}
         serverError={reportError}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete this listing?"
+        message="Your listing will be permanently removed. Buyers who bookmarked it will no longer see it."
+        confirmLabel="Delete listing"
+        variant="danger"
+        isLoading={remove.isPending}
       />
     </div>
   )

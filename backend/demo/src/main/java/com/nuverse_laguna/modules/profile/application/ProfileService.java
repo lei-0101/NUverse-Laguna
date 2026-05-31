@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProfileService {
@@ -23,6 +24,9 @@ public interface ProfileService {
     PublicProfileResponse getPublicProfile(UUID viewerId, UUID targetUserId);
     void follow(UUID followerId, UUID targetUserId);
     void unfollow(UUID followerId, UUID targetUserId);
+    void approveFollow(UUID ownerId, UUID followerId);
+    void rejectFollow(UUID ownerId, UUID followerId);
+    List<FollowSummary> getPendingFollowers(UUID userId);
     Page<FollowSummary> getFollowers(UUID userId, Pageable pageable);
     Page<FollowSummary> getFollowing(UUID userId, Pageable pageable);
 }

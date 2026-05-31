@@ -28,13 +28,26 @@ public class Follow extends BaseEntity {
     @Column(name = "following_id", nullable = false)
     private UUID followingId;
 
-    public static Follow create(UUID followerId, UUID followingId) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private FollowStatus status = FollowStatus.ACCEPTED;
+
+    public static Follow create(UUID followerId, UUID followingId, boolean targetIsPrivate) {
         if (followerId.equals(followingId)) {
             throw new AppException(HttpStatus.BAD_REQUEST, "You cannot follow yourself");
         }
         Follow follow = new Follow();
         follow.followerId = followerId;
         follow.followingId = followingId;
+        follow.status = targetIsPrivate ? FollowStatus.PENDING : FollowStatus.ACCEPTED;
         return follow;
+    }
+
+    public void accept() {
+        this.status = FollowStatus.ACCEPTED;
+    }
+
+    public boolean isPending() {
+        return this.status == FollowStatus.PENDING;
     }
 }

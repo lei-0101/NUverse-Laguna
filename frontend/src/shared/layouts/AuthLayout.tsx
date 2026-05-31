@@ -2,166 +2,251 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { ThemeToggle } from '@/shared/components/ThemeToggle'
 import { NUverseMark } from '@/shared/components/NUverseMark'
 import { paths } from '@/shared/routes/paths'
+import { useThemeStore } from '@/shared/store/themeStore'
 
-interface PanelContent {
-  eyebrow: string
-  headline1: string
-  headline2: string
-  sub: string
-  orbs: { color: string; w: number; top: string; left: string; duration: number; delay: number }[]
-}
+const MODULE_TAGS = ['Marketplace', 'Campus Events', 'Bulldog Exchange', 'Lost & Found', 'Bulldog Chibi']
 
-const LOGIN_PANEL: PanelContent = {
-  eyebrow: 'NU LAGUNA',
-  headline1: 'Your Campus.',
-  headline2: 'Your Universe.',
-  sub: 'Sign in and step back into your digital campus.',
-  orbs: [
-    { color: 'rgba(31,58,138,0.42)',  w: 460, top: '-12%', left: '-10%', duration: 13, delay: 0   },
-    { color: 'rgba(74,110,232,0.28)', w: 380, top: '32%',  left: '52%',  duration: 17, delay: 2.5 },
-    { color: 'rgba(245,179,0,0.22)',  w: 300, top: '62%',  left: '8%',   duration: 11, delay: 5   },
-    { color: 'rgba(167,139,250,0.16)',w: 210, top: '14%',  left: '38%',  duration: 9,  delay: 1   },
-  ],
-}
-
-const REGISTER_PANEL: PanelContent = {
-  eyebrow: 'JOIN NU LAGUNA',
-  headline1: 'Join the',
-  headline2: 'NUverse.',
-  sub: 'The exclusive campus hub for students, faculty, and staff.',
-  orbs: [
-    { color: 'rgba(74,110,232,0.38)',  w: 460, top: '-12%', left: '-10%', duration: 13, delay: 0   },
-    { color: 'rgba(167,139,250,0.32)', w: 380, top: '32%',  left: '52%',  duration: 17, delay: 2.5 },
-    { color: 'rgba(245,179,0,0.22)',   w: 300, top: '62%',  left: '8%',   duration: 11, delay: 5   },
-    { color: 'rgba(236,72,153,0.14)',  w: 210, top: '14%',  left: '38%',  duration: 9,  delay: 1   },
-  ],
-}
-
-const FEATURES = [
-  { icon: '🛒', label: 'Marketplace' },
-  { icon: '📅', label: 'Events' },
-  { icon: '🎒', label: 'Lost & Found' },
-  { icon: '🐾', label: 'Chibi Buddy' },
+const ORBS = [
+  { w: 360, top: '-18%', left: '-20%', color: 'rgba(74,110,232,0.18)',  dur: '16s', del: '0s'   },
+  { w: 240, top: '18%',  left: '52%',  color: 'rgba(245,179,0,0.11)',   dur: '20s', del: '4s'   },
+  { w: 180, top: '2%',   left: '38%',  color: 'rgba(167,139,250,0.12)', dur: '12s', del: '2s'   },
 ]
 
 export function AuthLayout() {
   const { pathname } = useLocation()
-  const panel = pathname === paths.register ? REGISTER_PANEL : LOGIN_PANEL
+  const isDark       = useThemeStore((s) => s.theme === 'dark')
+  const isRegister   = pathname === paths.register
 
   return (
     <div className="flex min-h-svh flex-col lg:flex-row">
-      {/* Global star field — dark mode only */}
+
+      {/* Star field */}
       <div className="stars-wrap" aria-hidden="true">
-        <div className="stars-1" />
-        <div className="stars-2" />
-        <div className="stars-3" />
+        <div className="stars-1" /><div className="stars-2" /><div className="stars-3" />
       </div>
 
-      {/* ── Left branding panel ──────────────────────────────── */}
+      {/* ── Left: campus photo — bottom-left content ──── */}
       <aside
+        className="auth-panel-bg relative hidden overflow-hidden lg:flex lg:w-[48%] xl:w-[50%] flex-col"
         aria-hidden="true"
-        className="auth-panel-bg relative hidden lg:flex lg:w-[52%] xl:w-[55%] flex-col items-center justify-center overflow-hidden"
       >
-        {/* Subtle dot grid overlay */}
-        <div className="absolute inset-0 dot-grid opacity-25 dark:opacity-12" />
+        <img
+          src="/images/campus.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          style={{ animation: 'campus-breathe 28s ease-in-out infinite' }}
+        />
 
-        {/* Floating orbs */}
-        {panel.orbs.map((orb, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full pointer-events-none"
-            style={{
-              background: orb.color,
-              width: orb.w,
-              height: orb.w,
-              top: orb.top,
-              left: orb.left,
-              filter: `blur(${Math.round(orb.w * 0.16)}px)`,
-              animation: `float-orb ${orb.duration}s ease-in-out infinite ${orb.delay}s`,
-            }}
-          />
-        ))}
-
-        {/* Panel content */}
-        <div className="relative z-10 flex flex-col items-center px-12 xl:px-16 text-center max-w-lg">
-          <NUverseMark size={88} />
-
-          <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/60 select-none">
-            {panel.eyebrow}
-          </p>
-
-          <div className="mt-3">
-            <p className="text-4xl xl:text-[2.75rem] font-extrabold tracking-tighter leading-[1.05] text-foreground">
-              {panel.headline1}
-            </p>
-            <p
-              className="text-4xl xl:text-[2.75rem] font-extrabold tracking-tighter leading-[1.05]"
-              style={{
-                background:
-                  'linear-gradient(135deg, #1f3a8a 0%, #4a6ee8 30%, #a78bfa 62%, #f5b300 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              {panel.headline2}
-            </p>
-          </div>
-
-          <p className="mt-5 text-sm text-muted-foreground leading-relaxed max-w-[22rem]">
-            {panel.sub}
-          </p>
-
-          {/* Feature pills */}
-          <div className="mt-10 flex flex-wrap justify-center gap-2">
-            {FEATURES.map((f) => (
-              <span
-                key={f.label}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/40 bg-surface/25 backdrop-blur-sm px-3.5 py-1.5 text-xs font-medium text-muted-foreground"
-              >
-                <span aria-hidden="true">{f.icon}</span>
-                {f.label}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom credit */}
-        <p className="absolute bottom-5 text-[10px] text-muted-foreground/35 tracking-[0.2em] uppercase select-none">
-          NUverse Laguna · NU Laguna
-        </p>
-      </aside>
-
-      {/* ── Right form panel ─────────────────────────────────── */}
-      <div className="relative z-10 flex flex-1 flex-col bg-surface dark:bg-[#0d1117] lg:border-l lg:border-border/50">
-        {/* Subtle universe bleed on left edge (desktop) */}
+        {/* Bottom-heavy overlay: dark at base (text area), clear at top (campus shows) */}
         <div
-          className="absolute inset-y-0 left-0 w-20 pointer-events-none hidden lg:block"
+          className="absolute inset-0"
           style={{
-            background:
-              'linear-gradient(to right, rgba(74,110,232,0.05), transparent)',
+            background: isDark
+              ? 'linear-gradient(to top, rgba(4,6,18,0.98) 0%, rgba(4,6,18,0.82) 30%, rgba(4,6,18,0.44) 60%, rgba(4,6,18,0.12) 100%)'
+              : 'linear-gradient(to top, rgba(8,18,80,0.97) 0%, rgba(8,18,80,0.80) 30%, rgba(8,18,80,0.36) 62%, rgba(8,18,80,0.08) 100%)',
           }}
         />
 
-        {/* Mobile top bar */}
-        <header className="flex items-center justify-between px-5 py-4 lg:hidden">
-          <Link to={paths.landing} aria-label="Back to home">
-            <NUverseMark size={32} />
-          </Link>
+        {/* Floating orbs */}
+        {ORBS.map((o, i) => (
+          <div key={i} className="pointer-events-none absolute rounded-full" style={{
+            width: o.w, height: o.w, top: o.top, left: o.left,
+            background: o.color, filter: `blur(${o.w * 0.22}px)`,
+            animation: `float-orb ${o.dur} ease-in-out infinite ${o.del}`,
+          }} />
+        ))}
+
+        <div className="absolute inset-0 dot-grid opacity-[0.045] pointer-events-none" />
+
+        {/* Content pinned to bottom-left */}
+        <div className="relative z-10 mt-auto px-10 pb-12 xl:px-14">
+          <NUverseMark size={50} />
+
+          <div className="mt-8">
+            {/* Eyebrow */}
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.38em]"
+              style={{ color: 'rgba(245,179,0,0.65)' }}>
+              {isRegister ? '— New Member —' : '— Member Access —'}
+            </p>
+            {/* Heading */}
+            <h2
+              className="font-black tracking-tight"
+              style={{ fontSize: 'clamp(2rem, 2.8vw, 2.6rem)', lineHeight: 1.05, color: '#ffffff' }}
+            >
+              {isRegister ? 'Join the\n' : 'Welcome to\n'}
+              <span style={{
+                background: 'linear-gradient(125deg, #ffffff 0%, #cfe0ff 40%, #a5bfff 70%, #f5b300 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                NUverse Laguna
+              </span>
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.52)' }}>
+              {isRegister
+                ? 'The official campus hub exclusively for the NU Laguna community.'
+                : 'Your campus universe — marketplace, events, merch, and more.'}
+            </p>
+          </div>
+
+          <div className="my-6 h-px" style={{ background: 'linear-gradient(90deg, rgba(245,179,0,0.5), rgba(74,110,232,0.3), transparent)' }} />
+
+          <div className="flex flex-wrap gap-2">
+            {MODULE_TAGS.map((m) => (
+              <span key={m}
+                className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[11px] font-medium backdrop-blur-sm"
+                style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {m}
+              </span>
+            ))}
+          </div>
+
+          <p className="mt-8 text-[10px] uppercase tracking-[0.22em] select-none"
+            style={{ color: 'rgba(255,255,255,0.45)' }}>
+            NU Laguna · Calamba, Laguna · Est. 1900
+          </p>
+        </div>
+      </aside>
+
+      {/* ── Right: editorial form panel ───────────────── */}
+      <div
+        className="relative z-10 flex flex-1 flex-col overflow-hidden"
+        style={{
+          background: isDark
+            ? 'radial-gradient(ellipse at 20% 10%, rgba(74,110,232,0.18) 0%, transparent 50%), radial-gradient(ellipse at 85% 85%, rgba(245,179,0,0.10) 0%, transparent 50%), radial-gradient(ellipse at 75% 10%, rgba(139,92,246,0.10) 0%, transparent 45%), #07091a'
+            : 'radial-gradient(ellipse at 20% 10%, rgba(74,110,232,0.10) 0%, transparent 50%), radial-gradient(ellipse at 85% 85%, rgba(245,179,0,0.07) 0%, transparent 50%), radial-gradient(ellipse at 75% 10%, rgba(139,92,246,0.07) 0%, transparent 45%), #f4f6ff',
+          borderLeft: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(31,58,138,0.08)',
+        }}
+      >
+        {/* ── Decorative background graphics ── */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+
+          {/* NUverse mark — giant watermark, top-right */}
+          <div className="absolute -right-16 -top-16" style={{ opacity: isDark ? 0.08 : 0.07 }}>
+            <NUverseMark size={380} showWordmark={false} />
+          </div>
+
+          {/* Atmospheric orbs — both modes, different colors */}
+          <div className="absolute rounded-full" style={{
+            width: 300, height: 300, top: '8%', right: '-5%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(74,110,232,0.28) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(74,110,232,0.14) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            animation: 'float-orb 14s ease-in-out infinite',
+          }} />
+          <div className="absolute rounded-full" style={{
+            width: 240, height: 240, bottom: '15%', right: '5%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(245,179,0,0.20) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(245,179,0,0.12) 0%, transparent 70%)',
+            filter: 'blur(35px)',
+            animation: 'float-orb 18s ease-in-out infinite 4s',
+          }} />
+          <div className="absolute rounded-full" style={{
+            width: 200, height: 200, top: '42%', right: '20%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)',
+            filter: 'blur(30px)',
+            animation: 'float-orb 11s ease-in-out infinite 8s',
+          }} />
+          <div className="absolute rounded-full" style={{
+            width: 180, height: 180, bottom: '35%', right: '-2%',
+            background: isDark
+              ? 'radial-gradient(circle, rgba(20,184,166,0.14) 0%, transparent 70%)'
+              : 'radial-gradient(circle, rgba(31,58,138,0.08) 0%, transparent 70%)',
+            filter: 'blur(28px)',
+            animation: 'float-orb 22s ease-in-out infinite 2s',
+          }} />
+
+          {/* Spinning rings */}
+          <div className="absolute right-6 top-[20%] h-[240px] w-[240px] rounded-full" style={{
+            border: `1.5px solid ${isDark ? 'rgba(74,110,232,0.22)' : 'rgba(31,58,138,0.18)'}`,
+            animation: 'ring-spin 40s linear infinite',
+          }} />
+          <div className="absolute right-16 top-[28%] h-[150px] w-[150px] rounded-full" style={{
+            border: `1.5px solid ${isDark ? 'rgba(245,179,0,0.18)' : 'rgba(245,179,0,0.20)'}`,
+            animation: 'ring-spin 26s linear infinite reverse',
+          }} />
+          <div className="absolute -bottom-14 -left-14 h-[260px] w-[260px] rounded-full" style={{
+            border: `1.5px solid ${isDark ? 'rgba(139,92,246,0.14)' : 'rgba(31,58,138,0.12)'}`,
+            animation: 'ring-spin 55s linear infinite',
+          }} />
+
+          {/* Floating sparkle dots */}
+          {[
+            { b: '30%', r: '12%', size: 5, color: isDark ? 'rgba(245,179,0,0.80)' : 'rgba(74,110,232,0.45)',   dur: '8s',  del: '0s'   },
+            { b: '44%', r: '24%', size: 4, color: isDark ? 'rgba(74,110,232,0.85)' : 'rgba(31,58,138,0.50)',   dur: '11s', del: '3s'   },
+            { b: '20%', r: '32%', size: 3, color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(31,58,138,0.35)',  dur: '14s', del: '6s'   },
+            { b: '58%', r: '9%',  size: 4, color: isDark ? 'rgba(167,139,250,0.75)' : 'rgba(139,92,246,0.40)', dur: '9s',  del: '1.5s' },
+            { b: '68%', r: '20%', size: 3, color: isDark ? 'rgba(245,179,0,0.60)' : 'rgba(245,179,0,0.50)',    dur: '13s', del: '4.5s' },
+            { b: '12%', r: '15%', size: 4, color: isDark ? 'rgba(74,110,232,0.70)' : 'rgba(74,110,232,0.45)',  dur: '16s', del: '7s'   },
+          ].map((d, i) => (
+            <div key={i} className="absolute rounded-full" style={{
+              bottom: d.b, right: d.r,
+              width: d.size, height: d.size,
+              background: d.color,
+              boxShadow: `0 0 ${d.size * 5}px ${d.color}`,
+              animation: `float-orb ${d.dur} ease-in-out infinite ${d.del}`,
+            }} />
+          ))}
+        </div>
+
+        {/* Mobile header */}
+        <header className="flex items-center justify-between px-6 py-4 lg:hidden">
+          <Link to={paths.landing}><NUverseMark size={32} /></Link>
           <ThemeToggle />
         </header>
 
-        {/* Desktop theme toggle */}
-        <div className="absolute top-4 right-5 z-20 hidden lg:block">
+        {/* Desktop controls */}
+        <div className="absolute top-5 right-6 z-20 hidden lg:flex items-center gap-3">
+          <Link
+            to={paths.landing}
+            className="flex items-center gap-1.5 text-xs font-semibold transition-colors"
+            style={{ color: isDark ? 'rgba(255,255,255,0.62)' : 'rgba(31,58,138,0.65)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+            Home
+          </Link>
           <ThemeToggle />
         </div>
 
-        {/* Main form content */}
-        <main className="flex flex-1 items-center justify-center px-5 py-10">
-          <div className="w-full max-w-sm">
+        {/* Form area */}
+        <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-12">
+          <div className="w-full max-w-[360px]" style={{ animation: 'page-enter 0.45s ease-out both' }}>
             <Outlet />
           </div>
         </main>
+
+        {/* Switch link */}
+        <div className="relative z-10 px-6 pb-8 text-center">
+          <p className="text-sm" style={{ color: isDark ? 'rgba(255,255,255,0.68)' : 'rgba(31,58,138,0.72)' }}>
+            {isRegister ? (
+              <>Already have an account?{' '}
+                <Link to={paths.login}
+                  className="font-bold transition-colors hover:opacity-80"
+                  style={{ color: isDark ? '#a5bfff' : '#1f3a8a' }}>
+                  Sign in
+                </Link>
+              </>
+            ) : (
+              <>New to NUverse?{' '}
+                <Link to={paths.register}
+                  className="font-bold transition-colors hover:opacity-80"
+                  style={{ color: isDark ? '#a5bfff' : '#1f3a8a' }}>
+                  Create an account
+                </Link>
+              </>
+            )}
+          </p>
+          <p className="mt-2 text-[11px]" style={{ color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(31,58,138,0.5)' }}>
+            © 2026 NUverse Laguna
+          </p>
+        </div>
       </div>
     </div>
   )

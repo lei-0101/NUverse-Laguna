@@ -50,10 +50,24 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductCardResponse> getProducts(MerchandiseCategory category, Pageable pageable) {
-        Page<MerchandiseProduct> page = (category != null)
-                ? productRepository.findByCategoryAndActiveTrue(category, pageable)
-                : productRepository.findByActiveTrue(pageable);
+    public Page<ProductCardResponse> getProducts(String keyword, MerchandiseCategory category,
+                                                  MerchandiseGender gender, Pageable pageable) {
+        Page<MerchandiseProduct> page;
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (hasKeyword) {
+            page = (category != null)
+                    ? productRepository.searchByNameAndCategory(keyword.trim(), category, pageable)
+                    : productRepository.searchByName(keyword.trim(), pageable);
+        } else if (category != null && gender != null) {
+            page = productRepository.findByCategoryAndGenderAndActiveTrue(category, gender, pageable);
+        } else if (category != null) {
+            page = productRepository.findByCategoryAndActiveTrue(category, pageable);
+        } else if (gender != null) {
+            page = productRepository.findByGenderAndActiveTrue(gender, pageable);
+        } else {
+            page = productRepository.findByActiveTrue(pageable);
+        }
 
         return page.map(this::toCardResponse);
     }
@@ -69,7 +83,8 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
     @Override
     public ProductResponse createProduct(CreateProductRequest request) {
         MerchandiseProduct product = MerchandiseProduct.create(
-                request.name(), request.description(), request.imageUrl(), request.category()
+                request.name(), request.description(), request.imageUrl(),
+                request.category(), request.gender()
         );
         MerchandiseProduct saved = productRepository.save(product);
         log.info("Merchandise product created: {}", saved.getId());
@@ -79,7 +94,8 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
     @Override
     public ProductResponse updateProduct(UUID productId, UpdateProductRequest request) {
         MerchandiseProduct product = findProductById(productId);
-        product.update(request.name(), request.description(), request.imageUrl(), request.category());
+        product.update(request.name(), request.description(), request.imageUrl(),
+                request.category(), request.gender());
         return toDetailResponse(productRepository.save(product));
     }
 
@@ -119,6 +135,27 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product variant", variantId));
         variant.updateStock(request.stock());
         return toVariantResponse(variantRepository.save(variant));
+    }
+
+    @Override
+    public VariantResponse updateVariant(UUID variantId, AddVariantRequest request) {
+        ProductVariant variant = variantRepository.findById(variantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product variant", variantId));
+        variant.update(
+                request.size(),
+                request.color(),
+                request.sku(),
+                request.stock(),
+                java.math.BigDecimal.valueOf(request.price())
+        );
+        return toVariantResponse(variantRepository.save(variant));
+    }
+
+    @Override
+    public void deleteVariant(UUID variantId) {
+        ProductVariant variant = variantRepository.findById(variantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product variant", variantId));
+        variantRepository.delete(variant);
     }
 
     // ── Reservations ──────────────────────────────────────────────────────────
@@ -187,7 +224,9 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
         boolean hasStock = variants.stream().anyMatch(ProductVariant::isAvailable);
         return new ProductCardResponse(
                 product.getId(), product.getName(), product.getCategory().name(),
-                product.getImageUrl(), variants.size(), minPrice, hasStock
+                product.getGender() != null ? product.getGender().name() : "UNISEX",
+                product.getImageUrl(), variants.size(), minPrice, hasStock,
+                product.isLimited()
         );
     }
 
@@ -198,6 +237,7 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
         return new ProductResponse(
                 product.getId(), product.getName(), product.getDescription(),
                 product.getCategory().name(), product.getImageUrl(), product.isActive(),
+                product.isLimited(),
                 variantResponses, product.getCreatedAt(), product.getUpdatedAt()
         );
     }

@@ -8,6 +8,7 @@ export const MERCHANDISE_CATEGORIES: MerchandiseCategory[] = [
   'STATIONERY',
   'BAGS',
   'EQUIPMENT',
+  'SHS',
   'OTHER',
 ]
 
@@ -17,6 +18,7 @@ const CATEGORY_LABELS: Record<MerchandiseCategory, string> = {
   STATIONERY: 'Stationery',
   BAGS: 'Bags',
   EQUIPMENT: 'Equipment',
+  SHS: 'SHS',
   OTHER: 'Other',
 }
 

@@ -3,6 +3,8 @@ package com.nuverse_laguna.modules.notifications.application;
 import com.nuverse_laguna.modules.notifications.domain.NotificationType;
 import com.nuverse_laguna.modules.notifications.domain.ReferenceType;
 import com.nuverse_laguna.shared.event.EventRsvpEvent;
+import com.nuverse_laguna.shared.event.LostFoundItemResolvedEvent;
+import com.nuverse_laguna.shared.event.MarketplaceListingSoldEvent;
 import com.nuverse_laguna.shared.event.ReservationCreatedEvent;
 import com.nuverse_laguna.shared.event.UserFollowedEvent;
 import com.nuverse_laguna.shared.event.UserRegisteredEvent;
@@ -98,6 +100,42 @@ public class NotificationEventListener {
         } catch (Exception e) {
             log.error("Failed to create WELCOME notification for user {}: {}",
                     event.userId(), e.getMessage());
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onMarketplaceListingSold(MarketplaceListingSoldEvent event) {
+        try {
+            notificationService.create(
+                    event.sellerId(),
+                    NotificationType.LISTING_SOLD,
+                    "Your listing was sold!",
+                    "\"" + event.title() + "\" has been marked as sold. Great job!",
+                    event.listingId(),
+                    ReferenceType.LISTING
+            );
+        } catch (Exception e) {
+            log.error("Failed to create LISTING_SOLD notification for seller {}: {}",
+                    event.sellerId(), e.getMessage());
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void onLostFoundItemResolved(LostFoundItemResolvedEvent event) {
+        try {
+            notificationService.create(
+                    event.reporterId(),
+                    NotificationType.LOST_FOUND_RESOLVED,
+                    "Item marked as resolved",
+                    "Your lost & found post has been marked as resolved.",
+                    event.itemId(),
+                    ReferenceType.LOST_FOUND_ITEM
+            );
+        } catch (Exception e) {
+            log.error("Failed to create LOST_FOUND_RESOLVED notification for user {}: {}",
+                    event.reporterId(), e.getMessage());
         }
     }
 }

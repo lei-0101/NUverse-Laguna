@@ -61,7 +61,8 @@ class BulldogExchangeServiceImplTest {
     @DisplayName("createProduct: saves product and returns response")
     void createProduct_savesAndReturnsResponse() {
         CreateProductRequest request = new CreateProductRequest(
-                "NU Shirt", "Official shirt", "http://img.jpg", MerchandiseCategory.CLOTHING
+                "NU Shirt", "Official shirt", "http://img.jpg",
+                MerchandiseCategory.CLOTHING, MerchandiseGender.UNISEX
         );
         when(productRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -295,7 +296,8 @@ class BulldogExchangeServiceImplTest {
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private MerchandiseProduct buildProduct() {
-        return MerchandiseProduct.create("NU Shirt", "Official NU shirt", null, MerchandiseCategory.CLOTHING);
+        return MerchandiseProduct.create("NU Shirt", "Official NU shirt", null,
+                MerchandiseCategory.CLOTHING, MerchandiseGender.UNISEX);
     }
 
     private ProductVariant buildVariant(MerchandiseProduct product, int stock) {

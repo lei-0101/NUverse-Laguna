@@ -9,6 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,11 +22,14 @@ public class ReservationExpiryScheduler {
     private final ReservationRepository reservationRepository;
     private final ProductVariantRepository variantRepository;
 
-    // Runs every 15 minutes. Finds PENDING reservations past their expiry time,
-    // transitions them to EXPIRED, and restores the reserved stock.
+    // Runs every 15 minutes. Skips Sundays — the countdown is paused that day.
     @Scheduled(fixedDelay = 15 * 60 * 1000L)
     @Transactional
     public void expireOverdueReservations() {
+        if (LocalDate.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+            log.debug("Reservation expiry skipped — Sunday countdown pause");
+            return;
+        }
         List<Reservation> expired = reservationRepository.findPendingExpiredBefore(LocalDateTime.now());
 
         if (expired.isEmpty()) {

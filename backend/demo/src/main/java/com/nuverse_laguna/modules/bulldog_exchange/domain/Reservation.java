@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -38,8 +39,16 @@ public class Reservation extends BaseEntity {
         reservation.studentId = studentId;
         reservation.variant = variant;
         reservation.status = ReservationStatus.PENDING;
-        reservation.expiresAt = LocalDateTime.now().plusHours(EXPIRY_HOURS);
+        reservation.expiresAt = skipSunday(LocalDateTime.now().plusHours(EXPIRY_HOURS));
         return reservation;
+    }
+
+    /** If the computed expiry lands on a Sunday, push it to Monday (same time). */
+    private static LocalDateTime skipSunday(LocalDateTime dt) {
+        if (dt.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            return dt.plusDays(1);
+        }
+        return dt;
     }
 
     // Expires this reservation and restores stock to the variant.

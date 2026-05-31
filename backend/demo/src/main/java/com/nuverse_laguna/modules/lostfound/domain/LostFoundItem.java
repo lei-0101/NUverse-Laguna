@@ -62,6 +62,17 @@ public class LostFoundItem extends BaseEntity {
         return item;
     }
 
+    public void update(ItemType type, String title, String description, String location,
+                       java.time.LocalDate itemDate, String imageUrl, String contact) {
+        this.type = type;
+        this.title = title;
+        this.description = description;
+        this.location = location;
+        this.itemDate = itemDate;
+        this.imageUrl = imageUrl;
+        this.contact = contact;
+    }
+
     public void resolve() {
         if (this.status == ItemStatus.RESOLVED) {
             throw new AppException(HttpStatus.CONFLICT, "Item is already resolved");

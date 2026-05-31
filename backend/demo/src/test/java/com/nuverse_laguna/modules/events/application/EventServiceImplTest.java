@@ -37,6 +37,9 @@ class EventServiceImplTest {
 
     @Mock private CampusEventRepository eventRepository;
     @Mock private EventRsvpRepository rsvpRepository;
+    @Mock private com.nuverse_laguna.modules.events.repository.EventReactionRepository reactionRepository;
+    @Mock private com.nuverse_laguna.modules.events.repository.EventCommentRepository commentRepository;
+    @Mock private com.nuverse_laguna.modules.profile.repository.UserProfileRepository profileRepository;
     @Mock private StorageService storageService;
     @Mock private ApplicationEventPublisher eventPublisher;
 
@@ -50,7 +53,7 @@ class EventServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new EventServiceImpl(eventRepository, rsvpRepository, storageService, eventPublisher);
+        service = new EventServiceImpl(eventRepository, rsvpRepository, reactionRepository, commentRepository, profileRepository, storageService, eventPublisher);
     }
 
     // ─── createEvent ─────────────────────────────────────────────────────────

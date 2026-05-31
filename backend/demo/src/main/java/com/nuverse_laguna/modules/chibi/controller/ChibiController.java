@@ -20,13 +20,13 @@ public class ChibiController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<ChibiProfileResponse>> getMyProfile(Authentication auth) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
-        return ResponseEntity.ok(ApiResponse.success(chibiService.getOrCreate(userId)));
+        return ResponseEntity.ok(ApiResponse.ok("Chibi profile retrieved",chibiService.getOrCreate(userId)));
     }
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<ChibiProfileResponse>> getUserProfile(
             @PathVariable UUID userId
     ) {
-        return ResponseEntity.ok(ApiResponse.success(chibiService.getForUser(userId)));
+        return ResponseEntity.ok(ApiResponse.ok("Chibi profile retrieved",chibiService.getForUser(userId)));
     }
 }

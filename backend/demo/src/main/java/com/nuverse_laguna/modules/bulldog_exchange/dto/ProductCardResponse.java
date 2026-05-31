@@ -7,8 +7,10 @@ public record ProductCardResponse(
         UUID id,
         String name,
         String category,
+        String gender,
         String imageUrl,
         int variantCount,
         BigDecimal minPrice,
-        boolean hasStock
+        boolean hasStock,
+        boolean limited
 ) {}

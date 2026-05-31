@@ -2,6 +2,8 @@ package com.nuverse_laguna.modules.announcements.application;
 
 import com.nuverse_laguna.modules.announcements.dto.AnnouncementResponse;
 import com.nuverse_laguna.modules.announcements.dto.CreateAnnouncementRequest;
+import com.nuverse_laguna.modules.announcements.dto.UpdateAnnouncementRequest;
+import com.nuverse_laguna.shared.dto.ReactionSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,7 +12,13 @@ import java.util.UUID;
 
 public interface AnnouncementService {
     AnnouncementResponse create(UUID adminId, CreateAnnouncementRequest request);
+    AnnouncementResponse update(UUID announcementId, UUID adminId, UpdateAnnouncementRequest request);
+    AnnouncementResponse getById(UUID announcementId, UUID currentUserId);
     List<AnnouncementResponse> getEffective();
     Page<AnnouncementResponse> getAll(Pageable pageable);
     AnnouncementResponse deactivate(UUID announcementId, UUID adminId);
+    AnnouncementResponse activate(UUID announcementId, UUID adminId);
+    void delete(UUID announcementId, UUID adminId);
+    AnnouncementResponse toggleReaction(UUID announcementId, UUID userId, String emoji);
+    List<ReactionSummary> getReactions(UUID announcementId);
 }

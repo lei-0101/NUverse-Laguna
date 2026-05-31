@@ -4,6 +4,8 @@ import com.nuverse_laguna.modules.events.application.EventService;
 import com.nuverse_laguna.modules.events.domain.EventCategory;
 import com.nuverse_laguna.modules.events.domain.EventStatus;
 import com.nuverse_laguna.modules.events.dto.*;
+import com.nuverse_laguna.modules.profile.repository.UserProfileRepository;
+import com.nuverse_laguna.shared.dto.ReactionSummary;
 import com.nuverse_laguna.shared.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class EventController {
 
     private final EventService eventService;
+    private final UserProfileRepository profileRepository;
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<EventCardResponse>>> getEvents(
@@ -133,5 +137,55 @@ public class EventController {
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("Image uploaded", eventService.uploadImage(file)));
+    }
+
+    @GetMapping("/{eventId}/attendees")
+    public ResponseEntity<ApiResponse<List<RsvpResponse>>> getAttendees(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(ApiResponse.ok("Attendees retrieved", eventService.getAttendees(eventId)));
+    }
+
+    @PostMapping("/{eventId}/react")
+    public ResponseEntity<ApiResponse<EventResponse>> react(
+            Authentication auth,
+            @PathVariable UUID eventId,
+            @RequestParam(defaultValue = "👍") String emoji) {
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        return ResponseEntity.ok(ApiResponse.ok("Reaction toggled", eventService.toggleReaction(eventId, userId, emoji)));
+    }
+
+    @GetMapping("/{eventId}/reactions")
+    public ResponseEntity<ApiResponse<List<ReactionSummary>>> getReactions(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(ApiResponse.ok("Reactions retrieved", eventService.getReactions(eventId)));
+    }
+
+    @GetMapping("/{eventId}/comments")
+    public ResponseEntity<ApiResponse<List<EventCommentResponse>>> getComments(@PathVariable UUID eventId) {
+        return ResponseEntity.ok(ApiResponse.ok("Comments retrieved", eventService.getComments(eventId)));
+    }
+
+    @PostMapping("/{eventId}/comments")
+    public ResponseEntity<ApiResponse<EventCommentResponse>> addComment(
+            Authentication auth,
+            @PathVariable UUID eventId,
+            @RequestBody java.util.Map<String, String> body) {
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        String authorName = profileRepository.findByUserId(userId)
+                .map(p -> p.getFullName()).orElse("Unknown");
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("Comment added",
+                eventService.addComment(eventId, userId, authorName, body.get("body"))));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(Authentication auth, @PathVariable UUID commentId) {
+        UUID userId = UUID.fromString((String) auth.getPrincipal());
+        eventService.deleteComment(commentId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/comments/{commentId}/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> adminDeleteComment(@PathVariable UUID commentId) {
+        eventService.adminDeleteComment(commentId);
+        return ResponseEntity.noContent().build();
     }
 }

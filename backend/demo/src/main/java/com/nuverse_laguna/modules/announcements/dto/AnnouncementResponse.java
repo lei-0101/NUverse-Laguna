@@ -11,5 +11,8 @@ public record AnnouncementResponse(
         UUID createdBy,
         boolean active,
         LocalDateTime expiresAt,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String imageUrl,
+        long reactionCount,
+        String userReaction
 ) {}

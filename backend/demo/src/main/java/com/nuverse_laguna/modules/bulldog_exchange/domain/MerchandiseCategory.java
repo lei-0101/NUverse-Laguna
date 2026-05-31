@@ -6,5 +6,6 @@ public enum MerchandiseCategory {
     STATIONERY,
     BAGS,
     EQUIPMENT,
+    SHS,
     OTHER
 }

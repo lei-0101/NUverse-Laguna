@@ -1,4 +1,4 @@
-export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED'
+export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'ARCHIVED'
 
 export type EventCategory =
   | 'ACADEMIC'
@@ -39,6 +39,22 @@ export interface CampusEvent {
   rsvpOpen: boolean
   isRsvpd: boolean
   createdAt: string
+  reactionCount: number
+  userReaction: string | null
+  commentCount: number
+}
+
+export interface EventComment {
+  id: string
+  authorId: string
+  authorName: string
+  body: string
+  createdAt: string
+}
+
+export interface EventAttendee {
+  rsvpId: string
+  userId: string
 }
 
 export interface RsvpResponse {

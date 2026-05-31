@@ -208,12 +208,7 @@ export function NUverseMark({ className, size = 40, showWordmark = true }: NUver
             className="font-extrabold tracking-tight"
             style={{
               fontSize: Math.max(size * 0.36, 13),
-              background: 'linear-gradient(135deg, #4a6ee8 0%, #a78bfa 40%, #f5b300 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              textShadow: 'none',
-              filter: 'drop-shadow(0 1px 2px rgba(31,58,138,0.25))',
+              color: 'var(--color-primary)',
             }}
           >
             NUverse
@@ -222,10 +217,7 @@ export function NUverseMark({ className, size = 40, showWordmark = true }: NUver
             className="font-bold tracking-[0.18em] uppercase"
             style={{
               fontSize: Math.max(size * 0.2, 8),
-              background: 'linear-gradient(90deg, #94a3b8 0%, #cbd5e1 50%, #94a3b8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: 'var(--color-muted-foreground)',
             }}
           >
             Laguna

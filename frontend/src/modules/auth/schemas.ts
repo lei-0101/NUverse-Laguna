@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** NU Laguna email domain — server is the source of truth; this is a fast UX check. */
-const NU_EMAIL_DOMAIN = 'national-u.edu.ph'
+const NU_EMAIL_DOMAIN = 'students.nu-laguna.edu.ph'
 
 const passwordRules = z
   .string()

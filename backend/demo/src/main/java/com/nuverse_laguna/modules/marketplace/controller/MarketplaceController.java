@@ -6,6 +6,7 @@ import com.nuverse_laguna.modules.marketplace.domain.ListingCondition;
 import com.nuverse_laguna.modules.marketplace.dto.CreateListingRequest;
 import com.nuverse_laguna.modules.marketplace.dto.ListingCardResponse;
 import com.nuverse_laguna.modules.marketplace.dto.ListingResponse;
+import com.nuverse_laguna.modules.marketplace.dto.MessageSellerRequest;
 import com.nuverse_laguna.modules.marketplace.dto.ReportListingRequest;
 import com.nuverse_laguna.modules.marketplace.dto.UpdateListingRequest;
 import com.nuverse_laguna.modules.marketplace.dto.UploadImageResponse;
@@ -124,6 +125,17 @@ public class MarketplaceController {
     ) {
         marketplaceService.unsaveListing(resolveUserId(auth), listingId);
         return ResponseEntity.ok(ApiResponse.ok("Listing removed from saved"));
+    }
+
+    @PostMapping("/{listingId}/message")
+    public ResponseEntity<ApiResponse<Void>> messageSeller(
+            Authentication auth,
+            @PathVariable UUID listingId,
+            @Valid @RequestBody MessageSellerRequest request
+    ) {
+        marketplaceService.messageSeller(resolveUserId(auth), listingId, request.message());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Message sent to seller."));
     }
 
     @PostMapping("/{listingId}/report")

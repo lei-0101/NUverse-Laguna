@@ -8,9 +8,12 @@ import com.nuverse_laguna.modules.auth.dto.UserResponse;
 import com.nuverse_laguna.modules.auth.infrastructure.EmailService;
 import com.nuverse_laguna.modules.auth.mapper.UserMapper;
 import com.nuverse_laguna.modules.auth.repository.UserRepository;
+import com.nuverse_laguna.shared.event.DailyLoginEvent;
 import com.nuverse_laguna.shared.event.UserRegisteredEvent;
+import com.nuverse_laguna.modules.auth.domain.UserStatus;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.exception.ResourceNotFoundException;
+import com.nuverse_laguna.shared.exception.SuspendedException;
 import com.nuverse_laguna.shared.security.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,7 +82,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public LoginResult login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email().toLowerCase())
                 .orElseThrow(() -> new AppException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
@@ -88,12 +90,26 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
+        if (user.getStatus() == UserStatus.SUSPENDED) {
+            if (user.isSuspensionExpired()) {
+                user.reactivate();
+                userRepository.save(user);
+            } else {
+                throw new SuspendedException(
+                        user.getSuspendedUntil(),
+                        user.getSuspensionReason(),
+                        user.getSuspendCount()
+                );
+            }
+        }
+
         if (!user.canLogin()) {
             throw new AppException(HttpStatus.FORBIDDEN,
                     "Account is not active. Please verify your email before logging in.");
         }
 
         String token = jwtService.generateToken(user.getId().toString(), user.getRole().name());
+        eventPublisher.publishEvent(new DailyLoginEvent(user.getId()));
         return new LoginResult(token, userMapper.toResponse(user));
     }
 

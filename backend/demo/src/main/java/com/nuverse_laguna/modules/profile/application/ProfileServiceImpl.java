@@ -1,6 +1,8 @@
 package com.nuverse_laguna.modules.profile.application;
 
+import com.nuverse_laguna.modules.auth.repository.UserRepository;
 import com.nuverse_laguna.modules.profile.domain.Follow;
+import com.nuverse_laguna.modules.profile.domain.FollowStatus;
 import com.nuverse_laguna.modules.profile.domain.ProfileVisibility;
 import com.nuverse_laguna.modules.profile.domain.UserProfile;
 import com.nuverse_laguna.modules.profile.dto.FollowSummary;
@@ -10,6 +12,8 @@ import com.nuverse_laguna.modules.profile.dto.UpdatePrivacyRequest;
 import com.nuverse_laguna.modules.profile.dto.UpdateProfileRequest;
 import com.nuverse_laguna.modules.profile.repository.FollowRepository;
 import com.nuverse_laguna.modules.profile.repository.UserProfileRepository;
+import com.nuverse_laguna.shared.event.AvatarUploadedEvent;
+import com.nuverse_laguna.shared.event.ProfileCompletedEvent;
 import com.nuverse_laguna.shared.event.UserFollowedEvent;
 import com.nuverse_laguna.shared.exception.AppException;
 import com.nuverse_laguna.shared.exception.ResourceNotFoundException;
@@ -38,6 +42,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final FollowRepository followRepository;
     private final StorageService storageService;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
 
     @Override
     public void createProfile(UUID userId, String fullName) {
@@ -67,7 +72,18 @@ public class ProfileServiceImpl implements ProfileService {
                 request.yearLevel(),
                 request.interests()
         );
-        return buildProfileResponse(userProfileRepository.save(profile));
+        ProfileResponse response = buildProfileResponse(userProfileRepository.save(profile));
+        if (isProfileComplete(profile)) {
+            eventPublisher.publishEvent(new ProfileCompletedEvent(userId));
+        }
+        return response;
+    }
+
+    private boolean isProfileComplete(UserProfile profile) {
+        return profile.getBio() != null && !profile.getBio().isBlank()
+                && profile.getCourse() != null && !profile.getCourse().isBlank()
+                && profile.getYearLevel() != null
+                && profile.getInterests() != null && !profile.getInterests().isBlank();
     }
 
     @Override
@@ -82,6 +98,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (previousAvatar != null) {
             storageService.delete(previousAvatar);
         }
+        eventPublisher.publishEvent(new AvatarUploadedEvent(userId));
         return response;
     }
 
@@ -118,12 +135,17 @@ public class ProfileServiceImpl implements ProfileService {
     public PublicProfileResponse getPublicProfile(UUID viewerId, UUID targetUserId) {
         UserProfile profile = findProfileByUserId(targetUserId);
 
-        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingId(viewerId, targetUserId);
+        boolean isFollowing = followRepository.existsByFollowerIdAndFollowingIdAndStatus(viewerId, targetUserId, FollowStatus.ACCEPTED);
+        boolean isPending   = followRepository.existsByFollowerIdAndFollowingIdAndStatus(viewerId, targetUserId, FollowStatus.PENDING);
         boolean isOwner = viewerId.equals(targetUserId);
         boolean canViewDetails = profile.isPublic() || isOwner || isFollowing;
 
         long followerCount = followRepository.countByFollowingId(targetUserId);
         long followingCount = followRepository.countByFollowerId(targetUserId);
+
+        String userRole = userRepository.findById(targetUserId)
+                .map(u -> u.getRole().name())
+                .orElse(null);
 
         return new PublicProfileResponse(
                 profile.getUserId(),
@@ -136,24 +158,64 @@ public class ProfileServiceImpl implements ProfileService {
                 followerCount,
                 followingCount,
                 isFollowing,
-                !profile.isPublic()
+                isPending,
+                !profile.isPublic(),
+                profile.isHideChibiShowcase(),
+                userRole
         );
     }
 
     @Override
     public void follow(UUID followerId, UUID targetUserId) {
-        if (!userProfileRepository.existsByUserId(targetUserId)) {
-            throw new ResourceNotFoundException("Profile", targetUserId);
-        }
+        UserProfile targetProfile = userProfileRepository.findByUserId(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile", targetUserId));
         if (followRepository.existsByFollowerIdAndFollowingId(followerId, targetUserId)) {
             throw new AppException(HttpStatus.CONFLICT, "You are already following this user");
         }
-        followRepository.save(Follow.create(followerId, targetUserId));
+        boolean targetIsPrivate = !targetProfile.isPublic();
+        Follow follow = Follow.create(followerId, targetUserId, targetIsPrivate);
+        followRepository.save(follow);
 
-        String followerName = userProfileRepository.findByUserId(followerId)
+        if (!targetIsPrivate) {
+            String followerName = userProfileRepository.findByUserId(followerId)
+                    .map(UserProfile::getFullName)
+                    .orElse("Someone");
+            eventPublisher.publishEvent(new UserFollowedEvent(followerId, followerName, targetUserId));
+        }
+    }
+
+    @Override
+    public void approveFollow(UUID ownerId, UUID followerId) {
+        Follow follow = followRepository.findByFollowerIdAndFollowingId(followerId, ownerId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Follow request not found"));
+        if (!follow.isPending()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Follow request is not pending");
+        }
+        follow.accept();
+        followRepository.save(follow);
+
+        String ownerName = userProfileRepository.findByUserId(ownerId)
                 .map(UserProfile::getFullName)
                 .orElse("Someone");
-        eventPublisher.publishEvent(new UserFollowedEvent(followerId, followerName, targetUserId));
+        eventPublisher.publishEvent(new UserFollowedEvent(followerId, ownerName, ownerId));
+    }
+
+    @Override
+    public void rejectFollow(UUID ownerId, UUID followerId) {
+        Follow follow = followRepository.findByFollowerIdAndFollowingId(followerId, ownerId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Follow request not found"));
+        followRepository.delete(follow);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<FollowSummary> getPendingFollowers(UUID userId) {
+        java.util.List<Follow> pending = followRepository.findPendingByFollowingId(userId);
+        java.util.List<UUID> followerIds = pending.stream().map(Follow::getFollowerId).toList();
+        if (followerIds.isEmpty()) return java.util.List.of();
+        return userProfileRepository.findAllByUserIdIn(followerIds).stream()
+                .map(p -> new FollowSummary(p.getUserId(), p.getFullName(), p.getAvatarUrl()))
+                .toList();
     }
 
     @Override

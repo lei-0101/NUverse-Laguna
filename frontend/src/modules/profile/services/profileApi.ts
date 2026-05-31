@@ -66,4 +66,16 @@ export const profileApi = {
       apiClient.get('/profile/me/following', { params: { page, size } }),
     )
   },
+
+  getPendingFollowers(): Promise<FollowSummary[]> {
+    return unwrap<FollowSummary[]>(apiClient.get('/profile/me/pending-followers'))
+  },
+
+  approveFollow(followerId: string): Promise<void> {
+    return apiClient.post(`/profile/${followerId}/approve-follow`).then(() => undefined)
+  },
+
+  rejectFollow(followerId: string): Promise<void> {
+    return apiClient.delete(`/profile/${followerId}/reject-follow`).then(() => undefined)
+  },
 }

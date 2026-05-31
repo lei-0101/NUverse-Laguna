@@ -6,6 +6,7 @@ export type MerchandiseCategory =
   | 'STATIONERY'
   | 'BAGS'
   | 'EQUIPMENT'
+  | 'SHS'
   | 'OTHER'
 
 export type ReservationStatus = 'PENDING' | 'CANCELLED' | 'EXPIRED' | 'FULFILLED'
@@ -21,15 +22,19 @@ export interface ProductVariant {
   available: boolean
 }
 
+export type MerchandiseGender = 'MALE' | 'FEMALE' | 'UNISEX'
+
 /** Mirrors `ProductCardResponse` — a card in the product grid. */
 export interface ProductCard {
   id: string
   name: string
   category: MerchandiseCategory
+  gender: MerchandiseGender
   imageUrl: string | null
   variantCount: number
   minPrice: number
   hasStock: boolean
+  limited: boolean
 }
 
 /** Mirrors `ProductResponse` — full product detail with variants. */
@@ -40,6 +45,7 @@ export interface ProductDetail {
   category: MerchandiseCategory
   imageUrl: string | null
   active: boolean
+  limited: boolean
   variants: ProductVariant[]
   createdAt: string
   updatedAt: string

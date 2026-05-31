@@ -1,6 +1,7 @@
 import { apiClient } from '@/shared/lib/apiClient'
 import type { Page } from '@/shared/lib/types'
-import type { CampusEvent, EventCard, RsvpResponse, CreateEventData, UpdateEventData, EventCategory, EventStatus } from '../types'
+import type { CampusEvent, EventCard, EventComment, RsvpResponse, CreateEventData, UpdateEventData, EventCategory, EventStatus } from '../types'
+import type { ReactionSummary } from '@/shared/components/ReactionsModal'
 
 export const eventsApi = {
   getEvents(params?: {
@@ -55,5 +56,33 @@ export const eventsApi = {
     return apiClient
       .post('/events/images', form, { headers: { 'Content-Type': 'multipart/form-data' } })
       .then((r) => r.data.data.url as string)
+  },
+
+  getAttendees(eventId: string): Promise<RsvpResponse[]> {
+    return apiClient.get(`/events/${eventId}/attendees`).then((r) => r.data.data)
+  },
+
+  toggleReaction(eventId: string, emoji = '👍'): Promise<CampusEvent> {
+    return apiClient.post(`/events/${eventId}/react`, null, { params: { emoji } }).then((r) => r.data.data)
+  },
+
+  getReactions(eventId: string): Promise<ReactionSummary[]> {
+    return apiClient.get(`/events/${eventId}/reactions`).then((r) => r.data.data)
+  },
+
+  getComments(eventId: string): Promise<EventComment[]> {
+    return apiClient.get(`/events/${eventId}/comments`).then((r) => r.data.data)
+  },
+
+  addComment(eventId: string, body: string): Promise<EventComment> {
+    return apiClient.post(`/events/${eventId}/comments`, { body }).then((r) => r.data.data)
+  },
+
+  deleteComment(commentId: string): Promise<void> {
+    return apiClient.delete(`/events/comments/${commentId}`).then(() => undefined)
+  },
+
+  adminDeleteComment(commentId: string): Promise<void> {
+    return apiClient.delete(`/events/comments/${commentId}/admin`).then(() => undefined)
   },
 }

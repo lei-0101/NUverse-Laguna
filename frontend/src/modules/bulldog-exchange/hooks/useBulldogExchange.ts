@@ -2,18 +2,25 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { bulldogExchangeApi } from '../services/bulldogExchangeApi'
 import type { AddVariantPayload, MerchandiseCategory, ProductPayload, UpdateStockPayload } from '../types'
 
+type Gender = 'MALE' | 'FEMALE' | 'UNISEX' | null
+
 export const exchangeKeys = {
   all: ['bulldog-exchange'] as const,
-  list: (category: MerchandiseCategory | null, page: number) =>
-    ['bulldog-exchange', 'list', category, page] as const,
+  list: (category: MerchandiseCategory | null, gender: Gender, keyword: string | null, page: number) =>
+    ['bulldog-exchange', 'list', category, gender, keyword, page] as const,
   detail: (productId: string) => ['bulldog-exchange', 'detail', productId] as const,
   myReservations: (page: number) => ['bulldog-exchange', 'my-reservations', page] as const,
 }
 
-export function useProducts(category: MerchandiseCategory | null, page: number) {
+export function useProducts(
+  category: MerchandiseCategory | null,
+  gender: Gender,
+  keyword: string | null,
+  page: number,
+) {
   return useQuery({
-    queryKey: exchangeKeys.list(category, page),
-    queryFn: () => bulldogExchangeApi.getProducts(category, page),
+    queryKey: exchangeKeys.list(category, gender, keyword, page),
+    queryFn: () => bulldogExchangeApi.getProducts(category, gender, keyword, page),
   })
 }
 
@@ -80,6 +87,27 @@ export function useUpdateVariantStock(productId: string) {
   return useMutation({
     mutationFn: ({ variantId, payload }: { variantId: string; payload: UpdateStockPayload }) =>
       bulldogExchangeApi.updateVariantStock(variantId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: exchangeKeys.detail(productId) })
+    },
+  })
+}
+
+export function useUpdateVariant(productId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ variantId, payload }: { variantId: string; payload: AddVariantPayload }) =>
+      bulldogExchangeApi.updateVariant(variantId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: exchangeKeys.detail(productId) })
+    },
+  })
+}
+
+export function useDeleteVariant(productId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (variantId: string) => bulldogExchangeApi.deleteVariant(variantId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: exchangeKeys.detail(productId) })
     },

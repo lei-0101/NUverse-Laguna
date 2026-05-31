@@ -1,6 +1,8 @@
 package com.nuverse_laguna.shared.handler;
 
+import com.nuverse_laguna.modules.auth.dto.SuspensionResponse;
 import com.nuverse_laguna.shared.exception.AppException;
+import com.nuverse_laguna.shared.exception.SuspendedException;
 import com.nuverse_laguna.shared.response.ApiResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -26,6 +28,15 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     // ── Domain / Application exceptions ──────────────────────────────────────
+
+    @ExceptionHandler(SuspendedException.class)
+    public ResponseEntity<ApiResponse<SuspensionResponse>> handleSuspended(SuspendedException ex) {
+        SuspensionResponse payload = new SuspensionResponse(
+                ex.getSuspendedUntil(), ex.getReason(), ex.getSuspendCount()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse<>(false, "ACCOUNT_SUSPENDED", payload));
+    }
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {

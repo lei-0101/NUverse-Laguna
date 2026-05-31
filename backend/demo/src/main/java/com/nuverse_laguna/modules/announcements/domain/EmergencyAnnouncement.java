@@ -34,6 +34,9 @@ public class EmergencyAnnouncement extends BaseEntity {
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     public static EmergencyAnnouncement create(String title, String body,
                                                 AnnouncementPriority priority,
                                                 UUID createdBy,
@@ -48,15 +51,35 @@ public class EmergencyAnnouncement extends BaseEntity {
         return a;
     }
 
-    public void update(String title, String body, AnnouncementPriority priority, LocalDateTime expiresAt) {
+    public static EmergencyAnnouncement create(String title, String body,
+                                                AnnouncementPriority priority,
+                                                UUID createdBy,
+                                                LocalDateTime expiresAt,
+                                                String imageUrl) {
+        EmergencyAnnouncement a = create(title, body, priority, createdBy, expiresAt);
+        a.imageUrl = imageUrl;
+        return a;
+    }
+
+    public void update(String title, String body, AnnouncementPriority priority,
+                       LocalDateTime expiresAt, String imageUrl) {
         this.title = title;
         this.body = body;
         this.priority = priority;
         this.expiresAt = expiresAt;
+        this.imageUrl = imageUrl;
+    }
+
+    public void update(String title, String body, AnnouncementPriority priority, LocalDateTime expiresAt) {
+        update(title, body, priority, expiresAt, this.imageUrl);
     }
 
     public void deactivate() {
         this.active = false;
+    }
+
+    public void activate() {
+        this.active = true;
     }
 
     public boolean isExpired() {

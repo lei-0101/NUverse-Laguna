@@ -40,6 +40,15 @@ public class User extends BaseEntity {
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
+    @Column(name = "suspended_until")
+    private LocalDateTime suspendedUntil;
+
+    @Column(name = "suspend_count", nullable = false)
+    private int suspendCount = 0;
+
+    @Column(name = "suspension_reason", length = 500)
+    private String suspensionReason;
+
     public static User create(String email, String hashedPassword, String fullName) {
         User user = new User();
         user.email = email;
@@ -72,8 +81,24 @@ public class User extends BaseEntity {
         this.verificationToken = null;
     }
 
-    public void suspend() {
+    public void suspend(LocalDateTime until, String reason) {
         this.status = UserStatus.SUSPENDED;
+        this.suspendedUntil = until;
+        this.suspensionReason = reason;
+        this.suspendCount++;
+    }
+
+    public void reactivate() {
+        if (this.status == UserStatus.ACTIVE) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Account is already active");
+        }
+        this.status = UserStatus.ACTIVE;
+        this.suspendedUntil = null;
+        this.suspensionReason = null;
+    }
+
+    public boolean isSuspensionExpired() {
+        return this.suspendedUntil != null && LocalDateTime.now().isAfter(this.suspendedUntil);
     }
 
     public boolean canLogin() {

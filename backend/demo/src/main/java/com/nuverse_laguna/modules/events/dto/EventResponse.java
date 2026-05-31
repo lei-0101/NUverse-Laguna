@@ -18,5 +18,8 @@ public record EventResponse(
         long rsvpCount,
         boolean rsvpOpen,
         boolean isRsvpd,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        long reactionCount,
+        String userReaction,
+        long commentCount
 ) {}
