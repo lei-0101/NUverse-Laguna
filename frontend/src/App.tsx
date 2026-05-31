@@ -4,18 +4,13 @@ import { AppRoutes } from '@/shared/routes/AppRoutes'
 import { Loader, ToastContainer } from '@/shared/components/ui'
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary'
 import { SuspensionScreen } from '@/shared/components/SuspensionScreen'
-import { LoginLoadingScreen, useLoginLoadingStore } from '@/shared/components/LoginLoadingScreen'
 
 function AppInner() {
-  const isLoading = useLoginLoadingStore((s) => s.showing)
-  const hideLoading = useLoginLoadingStore((s) => s.hide)
-
   return (
     <>
       <AppRoutes />
       <ToastContainer />
       <SuspensionScreen />
-      {isLoading && <LoginLoadingScreen onDone={hideLoading} />}
     </>
   )
 }

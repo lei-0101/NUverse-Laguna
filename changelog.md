@@ -4,10 +4,10 @@
 
 ## [0.40.0] — 2026-05-31
 
-### Polish Sprint — Dashboard Night Mode, Exchange Variants, Loading Screen, Terms Fix, Report Dropdown, Nav Spacing
+### Polish Sprint — Dashboard Night Mode, Exchange Variants, Terms Fix, Report Dropdown, Nav Spacing
 
 **Summary**
-Seven targeted fixes and one new feature: (1) Dashboard hero background was using dark navy colors in light mode during "night" period (after 8pm), making text unreadable — fixed to use a light indigo gradient; (2) Bulldog Exchange admin now has full variant edit and delete capability; (3) All product variants expanded from size-range groups to individual sizes (XS through 6XL) via V25 migration and DevDataSeeder update; (4) SHS Traditional Uniform products moved to `MerchandiseCategory.SHS` for proper filtering; College Traditional Uniform products added; (5) Invoice print/PDF fixed with proper `html, body` visibility approach; (6) Report modal category dropdown fixed for dark mode; (7) Navigation bar items got more breathing room to prevent "Lost & Found" and "Chibi" from appearing compressed; (8) Terms & Conditions modal no longer auto-pops on every login — accessible from Settings only; (9) New animated login loading screen shows after successful login for ~3.5 seconds with smiling Bulldog chibi before navigating to the dashboard.
+Seven targeted fixes: (1) Dashboard hero background was using dark navy colors in light mode during "night" period (after 8pm), making text unreadable — fixed to use a light indigo gradient; (2) Bulldog Exchange admin now has full variant edit and delete capability; (3) All product variants expanded from size-range groups to individual sizes (XS through 6XL) via V25 migration and DevDataSeeder update; (4) SHS Traditional Uniform products moved to `MerchandiseCategory.SHS` for proper filtering; College Traditional Uniform products added; (5) Invoice print/PDF fixed with proper `html, body` visibility approach; (6) Report modal category dropdown fixed for dark mode; (7) Navigation bar items got more breathing room to prevent "Lost & Found" and "Chibi" from appearing compressed; (8) Terms & Conditions modal no longer auto-pops on every login — accessible from Settings only.
 
 **Changes by area**
 
@@ -36,11 +36,6 @@ Seven targeted fixes and one new feature: (1) Dashboard hero background was usin
 *Terms & Conditions:*
 - `App.tsx`: `useTermsCheck()` and `<TermsModal />` removed from global render tree
 - Terms remain accessible from Settings → Terms & Rules section
-
-*Login loading screen:*
-- `LoginLoadingScreen.tsx` (new): full-screen dark overlay, CSS star field, centered 160px animated bulldog chibi, "Welcome back, Bulldog! 🐾" speech bubble, random greeting, `dot-pulse` loading dots; fades in/out over ~3.5s
-- `index.css`: `@keyframes dot-pulse` added
-- `LoginPage.tsx`: shows loading screen on login success before navigating
 
 **New Migration**
 | Version | Description |

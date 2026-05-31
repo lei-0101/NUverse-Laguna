@@ -650,9 +650,4 @@ button:hover .theme-toggle-moon {
   animation: shimmer-line 3s ease-in-out infinite;
 }
 
-/* ─── Loading dot pulse ─── */
-@keyframes dot-pulse {
-  0%, 100% { opacity: 0.25; transform: scale(0.75); }
-  50%       { opacity: 1;    transform: scale(1.1);  }
-}
 

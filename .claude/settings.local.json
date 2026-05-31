@@ -164,7 +164,22 @@
       "Bash(grep -v \"^\\\\.$\")",
       "Bash(rm -rf /workspaces/NUverse-Laguna/.context)",
       "Bash(mkdir -p /workspaces/NUverse-Laguna/DEMO)",
-      "Bash(git -C /workspaces/NUverse-Laguna status --short)"
+      "Bash(git -C /workspaces/NUverse-Laguna status --short)",
+      "Bash(./mvnw spring-boot:run -Dspring-boot.run.profiles=dev)",
+      "Bash(echo \"Restarted backend PID: $!\")",
+      "Bash(psql jdbc:postgresql://localhost:5432/nuverse_laguna -c \"DELETE FROM flyway_schema_history WHERE version = '25';\")",
+      "Bash(PGPASSWORD='' psql -h localhost -p 5432 -U postgres -d nuverse_laguna -c \"DELETE FROM flyway_schema_history WHERE version = '25';\")",
+      "Bash(PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d nuverse_laguna -c \"DELETE FROM flyway_schema_history WHERE version = '25';\")",
+      "Bash(psql -h localhost -p 5432 -d nuverse_laguna -c \"DELETE FROM flyway_schema_history WHERE version = '25';\")",
+      "Bash(psql -h localhost -p 5432 -d nuverse_laguna -c \"SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;\")",
+      "Bash(PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d nuverse_laguna -c \"SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;\")",
+      "Bash(pkill -f \"nuverse-laguna\")",
+      "Bash(echo \"Started PID: $!\")",
+      "Bash(echo \"Started backend PID: $!\")",
+      "Bash(curl -s -b /tmp/cookies.txt http://localhost:8080/api/bulldog-exchange?size=50)",
+      "Bash(awk '/^export const paths = {/,/^}/' /workspaces/NUverse-Laguna/frontend/src/shared/routes/paths.ts)",
+      "Bash(awk -F':' '{print $1}')",
+      "Bash([ ! -d \"/workspaces/NUverse-Laguna/frontend/src/modules/$module\" ])"
     ],
     "additionalDirectories": [
       "/tmp"

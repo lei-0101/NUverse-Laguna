@@ -1,6 +1,6 @@
 # NUverse Laguna
 
-A campus-exclusive fullstack web application for the students, faculty, and staff of **National University Laguna**. NUverse Laguna is a centralized digital ecosystem that combines marketplace functionality, official merchandise reservation, campus events, lost & found, announcements, direct messaging, and a unique XP-based Bulldog Chibi companion into one modern, production-quality platform.
+A campus-exclusive fullstack web application for **National University Laguna** — a centralized digital ecosystem combining marketplace, official merchandise reservation, campus events, lost & found, announcements, direct messaging, and an XP-based Bulldog Chibi companion.
 
 ---
 
@@ -10,100 +10,30 @@ A campus-exclusive fullstack web application for the students, faculty, and staf
 |---|---|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS v4, Zustand, TanStack Query, React Hook Form + Zod |
 | Backend | Java 21, Spring Boot, Spring Security, JPA/Hibernate, JWT (HTTP-only cookies) |
-| Database | PostgreSQL with Flyway migrations |
-| Auth | JWT stored in HTTP-only cookies, role-based access (Admin / Faculty / Student) |
+| Database | PostgreSQL with Flyway migrations (V1–V25) |
+| Auth | JWT in HTTP-only cookies — role-based access (Admin / Faculty / Student) |
 
 ---
 
-## Modules
-
-### Authentication
-- NU Laguna email-only registration (`@students.nu-laguna.edu.ph`)
-- Email verification, JWT auth, HTTP-only cookie sessions
-- Role-based access: Student, Faculty, Admin
-- Account suspension system with timed bans
-
-### Marketplace
-- Campus buy & sell platform — list, search, filter, bookmark
-- Image uploads, condition grading, category filters
-- In-app messaging between buyer and seller
-- Report listings for admin review
-
-### Bulldog Exchange
-- Official NU Laguna merchandise catalog with individual size variants (XS–6XL)
-- SHS and College product categories
-- Reservation system with 48-hour pickup window (Sundays excluded)
-- ₱50 reservation handling fee, printable invoice with anti-forgery code
-- Admin full CRUD: create/edit/deactivate products, add/edit/delete variants
-
-### Campus Events
-- Faculty-published events with RSVP, capacity tracking
-- Emoji reactions and comment threads
-- Auto-archive for finished events
-- Admin delete controls
-
-### Lost & Found
-- Community bulletin board for lost and found items
-- Full lifecycle: report → search → resolve
-- Comments, emoji reactions, admin moderation
-
-### Announcements
-- Priority-coded announcements (Critical / Important / General)
-- Photo attachments, emoji reactions, detail pages
-- Admin full lifecycle: create, edit, archive, delete
-
-### Direct Messaging
-- 1:1 conversations between any two users
-- Real-time-like polling, unread count badge in nav
-
-### User Profiles
-- Public / private profiles, follow system with approval flow for private accounts
-- School code and enrollment year display
-- Pending follow requests panel
-
-### Bulldog Chibi (XP System)
-- Persistent on-screen bulldog companion with 200+ personality-driven messages
-- XP earned from: daily login, marketplace activity, RSVP, Lost & Found posts, profile completion, avatar upload
-- 5 levels with visual tier upgrades and achievement unlocks
-- Strategy Pattern: each XP source maps to its own strategy implementation
-
-### Notifications
-- In-app bell with unread count, paginated history
-- Triggered by: marketplace activity, RSVP, follow requests, messaging
-
-### Admin Panel
-- User management: view, suspend (with duration + reason), reactivate
-- Announcements management with priority controls
-- Report review and close system
-- Platform statistics dashboard
-
----
-
-## Running the Project
+## How to Run
 
 ### Prerequisites
-- Java 21
-- Node.js 18+
-- PostgreSQL (running on port 5432)
+- Java 21, Node.js 18+, PostgreSQL on port 5432
 
 ### Backend
-
 ```bash
 cd backend/demo
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
-
-The backend starts on **port 8080**. The `dev` profile activates demo data seeding.
+Starts on **port 8080**. The `dev` profile seeds all demo data on first run.
 
 ### Frontend
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-The frontend starts on **port 5173**.
+Starts on **port 5173**.
 
 ---
 
@@ -119,41 +49,59 @@ The frontend starts on **port 5173**.
 
 ---
 
+## Modules
+
+| Module | Description |
+|---|---|
+| **Authentication** | NU email-only registration, JWT sessions, role-based access, timed account suspension |
+| **Marketplace** | Campus buy & sell — listings, search/filter, bookmarks, in-app messaging, reports |
+| **Bulldog Exchange** | Official NU merchandise — individual size variants (XS–6XL), SHS/College categories, reservation + printable invoice |
+| **Campus Events** | Faculty-published events — RSVP, reactions, comments, auto-archive |
+| **Lost & Found** | Community bulletin board — report, search, resolve, comments, reactions |
+| **Announcements** | Priority-coded campus updates (Critical/Important/General) — photo, reactions, admin lifecycle |
+| **Direct Messaging** | 1:1 in-app conversations with unread count |
+| **User Profiles** | Public/private profiles, follow system with approval flow, school labels |
+| **Bulldog Chibi** | XP companion — 5 levels, 11 XP sources via Strategy Pattern, 200+ messages |
+| **Notifications** | In-app bell — unread count, paginated history |
+| **Admin Panel** | User management, suspension, announcements, report review |
+
+---
+
 ## Architecture
 
-The project follows a strict **layered architecture** with module-based package organization:
+Strict **layered architecture** with module-based package organization:
 
 ```
 Controller → Service Interface → Service Implementation → Domain Entity → Repository
 ```
 
-Each module (`auth`, `marketplace`, `bulldog_exchange`, `events`, `announcements`, `lost_found`, `messages`, `notifications`, `chibi`, `profile`, `reports`) is self-contained with its own controller, service, domain, repository, and DTO layers.
-
-Cross-module communication uses Spring's `ApplicationEventPublisher` to maintain low coupling — for example, the XP system listens for events from other modules without those modules depending on the XP system directly.
+Each of the 10 modules is self-contained. Cross-module communication uses Spring's `ApplicationEventPublisher` — the XP system listens to events from other modules without direct coupling.
 
 ---
 
-## Key Design Patterns & OOP Highlights
+## Key OOP & Design Patterns
 
-- **Strategy Pattern** — `XpStrategyFactory` maps each `XpSource` enum to its own strategy class, making XP rewards open for extension without modifying existing code
-- **Factory Method** — Domain entities use static factory methods (`User.create()`, `MarketplaceListing.create()`, `Reservation.create()`) instead of public constructors
-- **Repository Pattern** — Spring Data JPA repositories abstract all data access
-- **DTO Pattern** — Strict separation between API contracts (DTOs) and domain entities; entities are never exposed directly
-- **Observer / Event-Driven** — `ApplicationEventPublisher` + `@TransactionalEventListener` for decoupled cross-module side effects
-- **Dependency Injection** — All dependencies injected via constructor; controllers depend on interfaces, not implementations
-
----
-
-## Database Migrations
-
-25 Flyway migrations (V1–V25) covering full schema history from initial tables through feature additions. All migrations are versioned, documented, and reversible-safe.
+| Pattern | Where |
+|---|---|
+| **Strategy** | `XpStrategyFactory` — 11 XP sources, each its own strategy class |
+| **Factory Method** | `User.create()`, `Reservation.create()`, `MarketplaceListing.create()` |
+| **Repository** | Spring Data JPA — all data access abstracted |
+| **DTO** | All API contracts use Request/Response DTOs — entities never exposed directly |
+| **Observer/Event** | `ApplicationEventPublisher` + `@TransactionalEventListener` — decoupled side effects |
+| **Dependency Injection** | Controllers depend on interfaces; Spring wires implementations |
 
 ---
 
 ## Testing
 
-- **Backend:** 219 tests (service + controller layers)
-- **Frontend:** 131 tests (component + hook layers)
+- **219 backend tests** — service + controller layers
+- **131 frontend tests** — component + hook layers
+
+---
+
+## Database
+
+25 Flyway migrations (V1–V25) — full schema history from initial tables through all feature additions.
 
 ---
 
@@ -161,24 +109,27 @@ Cross-module communication uses Spring's `ApplicationEventPublisher` to maintain
 
 ```
 NUverse-Laguna/
-├── backend/demo/          Spring Boot application
-│   ├── src/main/java/     Java source (modules + shared)
+├── backend/demo/           Spring Boot application
+│   ├── src/main/java/      Modules + shared infrastructure
 │   ├── src/main/resources/ application.yml + Flyway migrations
-│   └── src/test/          219 backend tests
-├── frontend/              React + TypeScript application
-│   ├── src/modules/       Feature modules
-│   ├── src/shared/        Shared components, hooks, store, routes
-│   └── src/index.css      Global styles + animations
-├── changelog.md           Full version history (v0.1 → v0.40)
-└── README.md              This file
+│   └── src/test/           219 backend tests
+├── frontend/               React + TypeScript
+│   ├── src/modules/        Feature modules
+│   ├── src/shared/         Components, hooks, store, routes
+│   └── src/index.css       Global styles + animations
+├── DEMO/                   Presentation materials
+├── changelog.md            Full version history (v0.1 → v0.40)
+└── README.md               This file
 ```
 
 ---
 
-## Changelog
+## Bonus Features Applicable
 
-See [changelog.md](changelog.md) for the full version history across 40 releases.
+- **Exceptional UI/UX** — editorial design, dark/light mode, animations, Bulldog Chibi
+- **Advanced Security** — HTTP-only JWT, role-based access, timed suspension
+- **Concurrency/Async** — 4 scheduled background tasks (suspension expiry, event archive, reservation expiry, XP dedup)
 
 ---
 
-*Built for National University Laguna — Finals Project, 2026*
+*National University Laguna — Finals Project 2026*

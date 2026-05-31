@@ -1,18 +1,19 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toApiError } from '@/shared/lib/apiClient'
+import { paths } from '@/shared/routes/paths'
 import { useLogin } from '../hooks/useAuth'
 import { LoginForm } from '../components/LoginForm'
 import type { LoginFormValues } from '../schemas'
 import { useThemeStore } from '@/shared/store/themeStore'
-import { useLoginLoadingStore } from '@/shared/components/LoginLoadingScreen'
 
 interface RedirectState { from?: { pathname: string } }
 
 export function LoginPage() {
   const login      = useLogin()
+  const navigate   = useNavigate()
   const location   = useLocation()
   const isDark     = useThemeStore((s) => s.theme === 'dark')
-  const showLoading = useLoginLoadingStore((s) => s.show)
+  const redirectTo = (location.state as RedirectState | null)?.from?.pathname ?? paths.dashboard
 
   return (
     <div>
@@ -28,7 +29,7 @@ export function LoginPage() {
         — Member Access —
       </p>
 
-      {/* Massive editorial heading — explicit colors for contrast */}
+      {/* Massive editorial heading */}
       <h1
         className="font-black tracking-tight"
         style={{
@@ -41,7 +42,7 @@ export function LoginPage() {
         Sign In.
       </h1>
 
-      {/* Gold accent rule — editorial */}
+      {/* Gold accent rule */}
       <div
         className="my-5 h-[2px] w-14 rounded-full"
         style={{
@@ -51,7 +52,6 @@ export function LoginPage() {
         aria-hidden="true"
       />
 
-      {/* Subtext — readable in both modes */}
       <p
         className="mb-8 text-sm leading-relaxed"
         style={{
@@ -65,7 +65,7 @@ export function LoginPage() {
       <div style={{ animation: 'hero-reveal 0.4s ease-out 0.22s both' }}>
         <LoginForm
           onSubmit={(values: LoginFormValues) =>
-            login.mutate(values, { onSuccess: () => showLoading() })
+            login.mutate(values, { onSuccess: () => navigate(redirectTo, { replace: true }) })
           }
           isSubmitting={login.isPending}
           serverError={login.isError ? toApiError(login.error).message : undefined}
