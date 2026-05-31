@@ -179,7 +179,10 @@
       "Bash(curl -s -b /tmp/cookies.txt http://localhost:8080/api/bulldog-exchange?size=50)",
       "Bash(awk '/^export const paths = {/,/^}/' /workspaces/NUverse-Laguna/frontend/src/shared/routes/paths.ts)",
       "Bash(awk -F':' '{print $1}')",
-      "Bash([ ! -d \"/workspaces/NUverse-Laguna/frontend/src/modules/$module\" ])"
+      "Bash([ ! -d \"/workspaces/NUverse-Laguna/frontend/src/modules/$module\" ])",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d nuverse_laguna -c \"DELETE FROM users WHERE email = 'imnayeon@students.nu-laguna.edu.ph';\")",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d nuverse_laguna)",
+      "Bash(PGPASSWORD=postgres psql -h localhost -U postgres -d nuverse_laguna -c \"\\\\d reservations\")"
     ],
     "additionalDirectories": [
       "/tmp"

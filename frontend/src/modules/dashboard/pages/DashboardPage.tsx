@@ -16,9 +16,9 @@ function getTimeContext(): {
   sub: string
 } {
   const h = new Date().getHours()
-  if (h < 5)  return { greeting: 'Good night',     period: 'night',     sub: 'Late-night campus mode.' }
-  if (h < 10) return { greeting: 'Good morning',   period: 'morning',   sub: 'Fresh start. Here\'s what\'s on campus.' }
-  if (h < 12) return { greeting: 'Good morning',   period: 'dawn',      sub: 'Midmorning — events and listings await.' }
+  if (h < 3)  return { greeting: 'Good night',     period: 'night',     sub: 'Late-night campus mode.' }
+  if (h < 6)  return { greeting: 'Good morning',   period: 'dawn',      sub: 'Early bird hours. The campus is yours.' }
+  if (h < 12) return { greeting: 'Good morning',   period: 'morning',   sub: 'Fresh start. Here\'s what\'s on campus.' }
   if (h < 17) return { greeting: 'Good afternoon', period: 'afternoon', sub: 'Afternoon energy. Let\'s see what\'s happening.' }
   if (h < 20) return { greeting: 'Good evening',   period: 'evening',   sub: 'Wind down with campus happenings.' }
   return              { greeting: 'Good evening',   period: 'night',     sub: 'Late hours. Browse safely, Bulldog.' }
