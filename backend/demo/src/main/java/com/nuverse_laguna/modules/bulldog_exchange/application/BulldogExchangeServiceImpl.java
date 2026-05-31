@@ -146,7 +146,7 @@ public class BulldogExchangeServiceImpl implements BulldogExchangeService {
                 request.color(),
                 request.sku(),
                 request.stock(),
-                java.math.BigDecimal.valueOf(request.price())
+                request.price()
         );
         return toVariantResponse(variantRepository.save(variant));
     }
